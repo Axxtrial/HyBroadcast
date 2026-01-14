@@ -12,11 +12,11 @@ HyBroadcaster is a simple announcement mod for Hytale servers. It allows adminis
 
 - /announce <message>: Displays a large title in the center of the screen for everyone.
 
-![Announce working](https://media.discordapp.net/attachments/1444178568354463850/1460862884778213441/image.png?ex=69687615&is=69672495&hm=12f93a7c00cf409920b3552e6cdb280ece84f0ae4b97c0c7b64b4e97505a9c26&=&format=webp&quality=lossless&width=1620&height=856)
+![Announce](https://media.discordapp.net/attachments/1444178568354463850/1460862884778213441/image.png?ex=69687615&is=69672495&hm=12f93a7c00cf409920b3552e6cdb280ece84f0ae4b97c0c7b64b4e97505a9c26&=&format=webp&quality=lossless&width=1620&height=856)
 
 - /announce toast <message>: Sends a global announcement to the chat.
 
-![Toast Announce working] (https://media.discordapp.net/attachments/1444178568354463850/1460863361397821615/image.png?ex=69687686&is=69672506&hm=b4388ac4c30ea54fbadd7181d9078c4eccb0550533cdbdbddb984a4c3fd22077&=&format=webp&quality=lossless&width=1625&height=856)
+![Toast](https://media.discordapp.net/attachments/1444178568354463850/1460863361397821615/image.png?ex=69687686&is=69672506&hm=b4388ac4c30ea54fbadd7181d9078c4eccb0550533cdbdbddb984a4c3fd22077&=&format=webp&quality=lossless&width=1625&height=856)
 
 ## Installation
 
