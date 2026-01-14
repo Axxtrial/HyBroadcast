@@ -1,0 +1,19 @@
+{
+  "Group": "com.hytalelatam",
+  "Name": "HyBroadcaster",
+  "Version": "1.0.0",
+  "Description": "Flexible announcement mod for Hytale with support for toast notifications and center screen titles.",
+  "Authors": [
+    {
+      "Name": "HytaleLATAM",
+      "Email": "admin@hytalelatam.com",
+      "Url": "https://hytalelatam.com"
+    }
+  ],
+  "Website": "https://hytalelatam.com",
+  "Main": "com.hytalelatam.hyannounces.HyAnnouncesPlugin",
+  "ServerVersion": "*",
+  "Dependencies": {},
+  "OptionalDependencies": {},
+  "DisabledByDefault": false
+}
