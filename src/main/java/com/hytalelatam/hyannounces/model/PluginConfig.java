@@ -11,6 +11,7 @@ public class PluginConfig {
     private String version;
     private boolean debugMode;
     private boolean enableScheduledMessages;
+    private boolean useUtc;
     private String toastPrefix;
     private List<ScheduledMessage> scheduledMessages;
 
@@ -18,6 +19,7 @@ public class PluginConfig {
         this.scheduledMessages = new ArrayList<>();
         this.toastPrefix = "[ANNOUNCEMENT] "; // Default prefix
         this.enableScheduledMessages = true; // Default enabled
+        this.useUtc = false; // Default local time
     }
 
     public String getPluginName() {
@@ -50,6 +52,14 @@ public class PluginConfig {
 
     public void setEnableScheduledMessages(boolean enableScheduledMessages) {
         this.enableScheduledMessages = enableScheduledMessages;
+    }
+
+    public boolean isUseUtc() {
+        return useUtc;
+    }
+
+    public void setUseUtc(boolean useUtc) {
+        this.useUtc = useUtc;
     }
 
     public String getToastPrefix() {

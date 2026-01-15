@@ -58,7 +58,8 @@ public class MessageScheduler {
                     broadcastMessage(msg);
 
                     // Calculate next execution and reschedule
-                    long delay = cron.getDelayUntilNext();
+                    boolean useUtc = plugin.getConfigManager().getConfig().isUseUtc();
+                    long delay = cron.getDelayUntilNext(useUtc);
                     executor.schedule(this, delay, TimeUnit.MILLISECONDS);
 
                     if (plugin.getConfigManager().getConfig().isDebugMode()) {
@@ -75,7 +76,8 @@ public class MessageScheduler {
         };
 
         // Schedule first execution
-        long initialDelay = cron.getDelayUntilNext();
+        boolean useUtc = plugin.getConfigManager().getConfig().isUseUtc();
+        long initialDelay = cron.getDelayUntilNext(useUtc);
         ScheduledFuture<?> future = executor.schedule(task, initialDelay, TimeUnit.MILLISECONDS);
         scheduledTasks.add(future);
 

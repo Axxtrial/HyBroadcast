@@ -1,6 +1,7 @@
 package com.hytalelatam.hyannounces.scheduler;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
 /**
@@ -38,7 +39,15 @@ public class CronScheduler {
      * Calculates the next execution time from now.
      */
     public LocalDateTime getNextExecution() {
-        return getNextExecution(LocalDateTime.now());
+        return getNextExecution(false);
+    }
+
+    /**
+     * Calculates the next execution time based on UTC or local time.
+     */
+    public LocalDateTime getNextExecution(boolean useUtc) {
+        LocalDateTime now = useUtc ? LocalDateTime.now(ZoneOffset.UTC) : LocalDateTime.now();
+        return getNextExecution(now);
     }
 
     /**
@@ -124,8 +133,15 @@ public class CronScheduler {
      * Gets delay in milliseconds until next execution.
      */
     public long getDelayUntilNext() {
-        LocalDateTime next = getNextExecution();
-        LocalDateTime now = LocalDateTime.now();
+        return getDelayUntilNext(false);
+    }
+
+    /**
+     * Gets delay in milliseconds until next execution.
+     */
+    public long getDelayUntilNext(boolean useUtc) {
+        LocalDateTime now = useUtc ? LocalDateTime.now(ZoneOffset.UTC) : LocalDateTime.now();
+        LocalDateTime next = getNextExecution(now);
         return ChronoUnit.MILLIS.between(now, next);
     }
 

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hytale Mod - Schedule & JSON Gen</title>
+    <title>HyBroadcaster - Message Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
         rel="stylesheet">
@@ -90,8 +90,9 @@
 
     <div class="max-w-3xl w-full card rounded-[2.5rem] shadow-2xl p-8 md:p-12">
         <div class="mb-10">
-            <h1 class="text-3xl font-extrabold text-white" id="txt-title">Hytale Mod Scheduler</h1>
-            <p class="text-slate-400 text-sm mt-2" id="txt-subtitle">Create automated messages for your server.</p>
+            <h1 class="text-3xl font-extrabold text-white" id="txt-title">HyBroadcaster Generator</h1>
+            <p class="text-slate-400 text-sm mt-2" id="txt-subtitle">Create a new message for your scheduledMessages
+                list.</p>
         </div>
 
         <div class="flex border-b border-slate-700 mb-8 gap-8 text-slate-500">
@@ -136,8 +137,15 @@
 
         <div class="space-y-6 bg-slate-900/30 p-6 rounded-3xl border border-slate-700 mb-8">
             <div class="space-y-2">
-                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
-                    id="label-msg">Announcement Message</label>
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest" id="label-title">Title
+                    (Optional)</label>
+                <input type="text" id="msg-title" oninput="genCron()" class="input-field w-full rounded-xl px-4 py-3"
+                    placeholder="DAILY TOURNAMENT">
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest" id="label-msg">Message
+                    Content</label>
                 <textarea id="msg-text" oninput="genCron()"
                     class="input-field w-full rounded-xl px-4 py-3 h-24 resize-none"
                     placeholder="Welcome to the server!"></textarea>
@@ -162,17 +170,15 @@
         </div>
 
         <div class="bg-slate-950 rounded-[2rem] p-8 border border-cyan-500/20 shadow-2xl">
-            <p class="text-[10px] font-black text-cyan-500 uppercase tracking-[0.25em] mb-4">Final Configuration JSON
-            </p>
+            <p class="text-[10px] font-black text-cyan-500 uppercase tracking-[0.25em] mb-4">Message JSON Object</p>
             <pre id="json-output"
                 class="text-cyan-400 font-mono text-xs leading-relaxed overflow-x-auto p-5 bg-slate-900/80 rounded-2xl border border-slate-800 mb-6"></pre>
 
             <div class="flex flex-col md:flex-row items-center justify-between gap-6 border-t border-slate-800 pt-6">
                 <p id="human-readable" class="text-[11px] text-slate-500 italic flex-1"></p>
                 <button onclick="copyToClipboard()" id="copy-btn"
-                    class="w-full md:w-auto bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-10 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-cyan-500/10">
-                    Copy Code
-                </button>
+                    class="w-full md:w-auto bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-10 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-cyan-500/10">Copy
+                    Code</button>
             </div>
         </div>
     </div>
@@ -183,16 +189,16 @@
 
         const i18n = {
             en: {
-                title: "Hytale Scheduler", subtitle: "Automated announcements configuration.",
-                label_min: "Minute", label_hour: "Hour", label_msg: "Message Content",
-                every: "Every?", copy: "Copy JSON", copied: "COPIED!",
+                title: "HyBroadcaster Tool", subtitle: "Generate message objects for your scheduledMessages list.",
+                label_min: "Minute", label_hour: "Hour", label_msg: "Message Content", label_title: "Title (Optional)",
+                every: "Every?", copy: "Copy Object", copied: "COPIED!",
                 toast: "Display as Emblem (Toast)?", toast_desc: "Big screen notification vs small chat text.",
                 days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], msg_pre: "Will run "
             },
             es: {
-                title: "Generador Hytale", subtitle: "Configuración de anuncios automáticos.",
-                label_min: "Minuto", label_hour: "Hora", label_msg: "Contenido del Mensaje",
-                every: "¿Cada?", copy: "Copiar JSON", copied: "¡COPIADO!",
+                title: "Herramienta HyBroadcaster", subtitle: "Genera objetos de mensaje para tu lista scheduledMessages.",
+                label_min: "Minuto", label_hour: "Hora", label_msg: "Contenido del Mensaje", label_title: "Título (Opcional)",
+                every: "¿Cada?", copy: "Copiar Objeto", copied: "¡COPIADO!",
                 toast: "¿Mostrar como Emblema (Toast)?", toast_desc: "Notificación grande vs texto pequeño en chat.",
                 days: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"], msg_pre: "Se ejecutará "
             }
@@ -206,6 +212,7 @@
             document.getElementById('label-min').innerText = t.label_min;
             document.getElementById('label-hour').innerText = t.label_hour;
             document.getElementById('label-msg').innerText = t.label_msg;
+            document.getElementById('label-title').innerText = t.label_title;
             document.getElementById('txt-every-m').innerText = t.every;
             document.getElementById('txt-every-h-check').innerText = t.every;
             document.getElementById('txt-is-toast').innerText = t.toast;
@@ -244,6 +251,7 @@
         function genCron() {
             let m = document.getElementById('cron-m').value || '0';
             let h = document.getElementById('cron-h').value || '*';
+            const title = document.getElementById('msg-title').value || "";
             const msg = document.getElementById('msg-text').value || "Welcome to our server!";
             const isToast = document.getElementById('is-toast-check').checked;
 
@@ -251,7 +259,14 @@
             if (document.getElementById('check-h').checked && h !== '*' && !h.includes('/')) h = '*/' + h;
 
             const cron = `${m} ${h} * * ${selectedDays.sort().join(',')}`;
-            const jsonObj = { Schedule: cron, IsToast: isToast, Message: msg };
+
+            // OBJETO DE MENSAJE LIMPIO PARA LA LISTA
+            const jsonObj = {
+                schedule: cron,
+                isToast: isToast,
+                title: title,
+                message: msg
+            };
 
             document.getElementById('json-output').innerText = JSON.stringify(jsonObj, null, 4);
             updateHumanReadable(m, h, selectedDays.join(','));
@@ -260,61 +275,36 @@
         function updateHumanReadable(m, h, d) {
             let res = "";
             const isMi = m.includes('*/'), isHi = h.includes('*/');
-
-            // Traducciones internas para la frase
             const t = {
-                en: {
-                    run: "Will run ",
-                    every: "every ",
-                    min: " min",
-                    hour: " hour",
-                    hours: " hours",
-                    at: "at ",
-                    atMin: "at minute ",
-                    onDays: " on selected days",
-                    everyMin: "every minute",
-                    allHours: "of every hour"
-                },
-                es: {
-                    run: "Se ejecutará ",
-                    every: "cada ",
-                    min: " min",
-                    hour: " hora",
-                    hours: " horas",
-                    at: "a las ",
-                    atMin: "en el minuto ",
-                    onDays: " los días seleccionados",
-                    everyMin: "cada minuto",
-                    allHours: "de todas las horas"
-                }
+                en: { run: "Will run ", every: "every ", min: " min", hour: " hour", hours: " hours", at: "at ", atMin: "at minute ", onDays: " on selected days", everyMin: "every minute", allHours: "of every hour" },
+                es: { run: "Se ejecutará ", every: "cada ", min: " min", hour: " hora", hours: " horas", at: "a las ", atMin: "en el minuto ", onDays: " los días seleccionados", everyMin: "cada minuto", allHours: "de todas las horas" }
             }[currentLang];
 
             res = t.run;
-
-            // LÓGICA DE TRADUCCIÓN
-            if (isMi && isHi) {
-                // Ejemplo: */10 */2 (Cada 2 horas en intervalos de 10 min)
-                res += `${t.every}${h.split('/')[1]}${t.hours}, ${currentLang === 'es' ? 'en intervalos de' : 'in'} ${m.split('/')[1]}${t.min}`;
-            }
-            else if (isMi) {
-                // Ejemplo: */15 * (Cada 15 minutos de todas las horas)
-                res += `${t.every}${m.split('/')[1]}${t.min} `;
-                res += (h === '*') ? t.allHours : `${t.at}${h}:00`;
-            }
-            else if (isHi) {
-                // Ejemplo: 0 */3 (Al minuto 0 cada 3 horas)
-                res += `${t.atMin}${m} ${t.every}${h.split('/')[1]}${t.hours}`;
-            }
+            if (isMi && isHi) res += `${t.every}${h.split('/')[1]}${t.hours}, ${currentLang === 'es' ? 'en intervalos de' : 'in'} ${m.split('/')[1]}${t.min}`;
+            else if (isMi) { res += `${t.every}${m.split('/')[1]}${t.min} `; res += (h === '*') ? t.allHours : `${t.at}${h}:00`; }
+            else if (isHi) res += `${t.atMin}${m} ${t.every}${h.split('/')[1]}${t.hours}`;
             else {
-                // Ejemplo: 0 12 (A las 12:00)
                 const hh = (h === '*') ? (currentLang === 'es' ? "cada hora" : "every hour") : `${h}:00`;
                 const mm = (m === '*' || m === '0') ? "" : ` ${t.atMin}${m}`;
                 res += `${t.at}${hh}${mm}`;
             }
-
             if (d !== '*') res += t.onDays;
-
             document.getElementById('human-readable').innerText = `"${res}."`;
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('json-output').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copy-btn');
+                const originalText = btn.innerText;
+                btn.innerText = i18n[currentLang].copied;
+                btn.classList.replace('bg-cyan-500', 'bg-green-500');
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.replace('bg-green-500', 'bg-cyan-500');
+                }, 2000);
+            });
         }
 
         setLanguage('en');
