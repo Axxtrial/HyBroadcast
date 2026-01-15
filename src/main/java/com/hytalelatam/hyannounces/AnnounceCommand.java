@@ -28,7 +28,7 @@ public class AnnounceCommand extends CommandBase {
         // the --confirm requirement)
         if (!context.sender().hasPermission("hybroadcaster.admin")
                 && !context.sender().hasPermission("role.operator")) {
-            context.sendMessage(translateLegacy("§cYou don't have permission to use this command."));
+            context.sendMessage(translateLegacy("You don't have permission to use this command."));
             return;
         }
 
@@ -36,7 +36,7 @@ public class AnnounceCommand extends CommandBase {
         // Skip command name
         String[] parts = input.split(" ");
         if (parts.length <= 1) {
-            context.sendMessage(translateLegacy("§cUsage: /announce <message> or /announce toast <message>"));
+            context.sendMessage(translateLegacy("Usage: /announce <message> or /announce toast <message>"));
             return;
         }
 
@@ -45,7 +45,7 @@ public class AnnounceCommand extends CommandBase {
 
         if (isToast) {
             if (parts.length < 3) {
-                context.sendMessage(translateLegacy("§cPlease provide a message for the toast notification."));
+                context.sendMessage(translateLegacy("Please provide a message for the toast notification."));
                 return;
             }
             messageStr = String.join(" ", java.util.Arrays.copyOfRange(parts, 2, parts.length));
@@ -60,7 +60,7 @@ public class AnnounceCommand extends CommandBase {
         universe.getPlayers().forEach(player -> {
             if (isToast) {
                 // Fallback action bar message
-                player.sendMessage(translateLegacy("§6§l[ANNOUNCEMENT] §f" + finalMessage));
+                player.sendMessage(translateLegacy("[ANNOUNCEMENT] " + finalMessage));
             } else {
                 // Center Screen Announcement (Event Title)
                 // Get the world the player is currently in
@@ -68,15 +68,15 @@ public class AnnounceCommand extends CommandBase {
                 if (world != null) {
                     EventTitleUtil.showEventTitleToPlayer(
                             player,
-                            translateLegacy("§6§l" + finalMessage), // Title
-                            translateLegacy("§eAdmin Announcement"), // Subtitle
+                            translateLegacy(finalMessage), // Title
+                            translateLegacy("Admin Announcement"), // Subtitle
                             true // Animation
                     );
                 }
             }
         });
 
-        context.sendMessage(translateLegacy("§aAnnouncement sent successfully."));
+        context.sendMessage(translateLegacy("Announcement sent successfully."));
     }
 
     private Message translateLegacy(String text) {

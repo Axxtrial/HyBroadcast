@@ -1,5 +1,33 @@
 {
   "pluginName": "HyBroadcaster",
-  "version": "1.0.0",
-  "debugMode": false
+  "version": "1.1.0",
+  "debugMode": false,
+  "enableScheduledMessages": true,
+  "toastPrefix": "[ANNOUNCEMENT] ",
+  "scheduledMessages": [
+    {
+      "schedule": "*/30 * * * *",
+      "isToast": true,
+      "title": "",
+      "message": "Welcome to our server! Visit our website for more information."
+    },
+    {
+      "schedule": "0 12 * * 1-5",
+      "isToast": false,
+      "title": "DAILY TOURNAMENT",
+      "message": "The daily tournament starts in 10 minutes. Sign up now!"
+    },
+    {
+      "schedule": "0 * * * *",
+      "isToast": true,
+      "title": "",
+      "message": "Remember: Use /help to see all available commands."
+    },
+    {
+      "schedule": "0 18 * * 0,6",
+      "isToast": false,
+      "title": "SPECIAL EVENT",
+      "message": "Weekend special event! Join now to get exclusive rewards."
+    }
+  ]
 }
