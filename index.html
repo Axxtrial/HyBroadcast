@@ -258,23 +258,63 @@
         }
 
         function updateHumanReadable(m, h, d) {
-            let res = i18n[currentLang].msg_pre;
+            let res = "";
             const isMi = m.includes('*/'), isHi = h.includes('*/');
-            if (isMi && isHi) res += currentLang === 'es' ? `cada ${h.split('/')[1]} h, en intervalos de ${m.split('/')[1]} min` : `every ${h.split('/')[1]} h, in ${m.split('/')[1]}-min intervals`;
-            else if (isMi) res += (currentLang === 'es' ? `cada ${m.split('/')[1]} min ` : `every ${m.split('/')[1]} min `) + (h === '*' ? (currentLang === 'es' ? "de todas las horas" : "of every hour") : `at ${h}:00`);
-            else if (isHi) res += currentLang === 'es' ? `al min ${m} cada ${h.split('/')[1]} h` : `at min ${m} every ${h.split('/')[1]} h`;
-            else res += (h === '*' ? "cada hora" : `${h}:00`) + (m === '*' ? "" : ` min ${m}`);
-            if (d !== '*') res += currentLang === 'es' ? " los días seleccionados" : " on selected days";
-            document.getElementById('human-readable').innerText = `"${res}."`;
-        }
 
-        function copyToClipboard() {
-            navigator.clipboard.writeText(document.getElementById('json-output').innerText);
-            const btn = document.getElementById('copy-btn');
-            const old = i18n[currentLang].copy;
-            btn.innerText = i18n[currentLang].copied;
-            btn.classList.replace('bg-cyan-500', 'bg-green-500');
-            setTimeout(() => { btn.innerText = old; btn.classList.replace('bg-green-500', 'bg-cyan-500'); }, 2000);
+            // Traducciones internas para la frase
+            const t = {
+                en: {
+                    run: "Will run ",
+                    every: "every ",
+                    min: " min",
+                    hour: " hour",
+                    hours: " hours",
+                    at: "at ",
+                    atMin: "at minute ",
+                    onDays: " on selected days",
+                    everyMin: "every minute",
+                    allHours: "of every hour"
+                },
+                es: {
+                    run: "Se ejecutará ",
+                    every: "cada ",
+                    min: " min",
+                    hour: " hora",
+                    hours: " horas",
+                    at: "a las ",
+                    atMin: "en el minuto ",
+                    onDays: " los días seleccionados",
+                    everyMin: "cada minuto",
+                    allHours: "de todas las horas"
+                }
+            }[currentLang];
+
+            res = t.run;
+
+            // LÓGICA DE TRADUCCIÓN
+            if (isMi && isHi) {
+                // Ejemplo: */10 */2 (Cada 2 horas en intervalos de 10 min)
+                res += `${t.every}${h.split('/')[1]}${t.hours}, ${currentLang === 'es' ? 'en intervalos de' : 'in'} ${m.split('/')[1]}${t.min}`;
+            }
+            else if (isMi) {
+                // Ejemplo: */15 * (Cada 15 minutos de todas las horas)
+                res += `${t.every}${m.split('/')[1]}${t.min} `;
+                res += (h === '*') ? t.allHours : `${t.at}${h}:00`;
+            }
+            else if (isHi) {
+                // Ejemplo: 0 */3 (Al minuto 0 cada 3 horas)
+                res += `${t.atMin}${m} ${t.every}${h.split('/')[1]}${t.hours}`;
+            }
+            else {
+                // Ejemplo: 0 12 (A las 12:00)
+                const hh = (h === '*') ? (currentLang === 'es' ? "cada hora" : "every hour") : `${h}:00`;
+                const mm = (m === '*' || m === '0') ? "" : ` ${t.atMin}${m}`;
+                res += `${t.at}${hh}${mm}`;
+            }
+
+            if (d !== '*') res += t.onDays;
+
+            document.getElementById('human-readable').innerText = `"${res}."`;
         }
 
         setLanguage('en');
