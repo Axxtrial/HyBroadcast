@@ -40,24 +40,11 @@ public class ReloadCommand extends CommandBase {
             // Reload configuration
             plugin.getConfigManager().reload();
 
-            // Restart scheduler only if enabled
-            if (plugin.getConfigManager().getConfig().isEnableScheduledMessages()) {
-                plugin.getMessageScheduler().restart(
-                        plugin.getConfigManager().getConfig().getScheduledMessages());
+            // Reload scheduler
+            plugin.reloadMessageScheduler();
 
-                context.sendMessage(com.hypixel.hytale.server.core.Message.raw(
-                        "Configuration reloaded successfully! " +
-                                plugin.getConfigManager().getConfig().getScheduledMessages().size() +
-                                " scheduled messages loaded."));
-            } else {
-                // Stop scheduler if it was running
-                if (plugin.getMessageScheduler() != null) {
-                    plugin.getMessageScheduler().shutdown();
-                }
-
-                context.sendMessage(com.hypixel.hytale.server.core.Message.raw(
-                        "Configuration reloaded successfully! Scheduled messages are disabled."));
-            }
+            context.sendMessage(com.hypixel.hytale.server.core.Message.raw(
+                    "Configuration reloaded successfully!"));
 
             plugin.getLogger().atInfo().log("Configuration reloaded by admin");
 

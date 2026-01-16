@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.hytalelatam"
-version = "1.2.0"
+version = "1.3.2"
 description = "HyBroadcaster - Professional Global Announcements for Hytale"
 
 repositories {

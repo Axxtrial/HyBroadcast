@@ -2,10 +2,10 @@ package com.hytalelatam.hyannounces.scheduler;
 
 import com.hytalelatam.hyannounces.HyAnnouncesPlugin;
 import com.hytalelatam.hyannounces.model.ScheduledMessage;
-import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.util.EventTitleUtil;
+import com.hytalelatam.hyannounces.util.ColorUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +49,10 @@ public class MessageScheduler {
     private void scheduleMessage(ScheduledMessage msg) {
         CronScheduler cron = new CronScheduler(msg.getSchedule());
 
+        // Capture the current executor instance to avoid rescheduling on a new one
+        // after reload
+        final ScheduledExecutorService currentExecutor = this.executor;
+
         // Schedule the recurring task
         Runnable task = new Runnable() {
             @Override
@@ -60,13 +64,20 @@ public class MessageScheduler {
                     // Calculate next execution and reschedule
                     boolean useUtc = plugin.getConfigManager().getConfig().isUseUtc();
                     long delay = cron.getDelayUntilNext(useUtc);
-                    executor.schedule(this, delay, TimeUnit.MILLISECONDS);
+
+                    // Use the captured executor instance
+                    // If this executor is shutdown (due to reload), this will throw
+                    // RejectedExecutionException
+                    // which stops the loop - exactly what we want.
+                    currentExecutor.schedule(this, delay, TimeUnit.MILLISECONDS);
 
                     if (plugin.getConfigManager().getConfig().isDebugMode()) {
                         plugin.getLogger().atInfo().log(
                                 "Message scheduled for next execution in " + (delay / 1000) + " seconds: "
                                         + msg.getMessage());
                     }
+                } catch (RejectedExecutionException e) {
+                    // Executor is shutdown, stop this task gracefully
                 } catch (Exception e) {
                     plugin.getLogger().atSevere().log(
                             "Error executing scheduled message: " + e.getMessage());
@@ -78,7 +89,7 @@ public class MessageScheduler {
         // Schedule first execution
         boolean useUtc = plugin.getConfigManager().getConfig().isUseUtc();
         long initialDelay = cron.getDelayUntilNext(useUtc);
-        ScheduledFuture<?> future = executor.schedule(task, initialDelay, TimeUnit.MILLISECONDS);
+        ScheduledFuture<?> future = currentExecutor.schedule(task, initialDelay, TimeUnit.MILLISECONDS);
         scheduledTasks.add(future);
 
         plugin.getLogger().atInfo().log(
@@ -104,7 +115,7 @@ public class MessageScheduler {
             if (msg.isToast()) {
                 // Toast notification (action bar message with custom prefix)
                 String prefix = plugin.getConfigManager().getConfig().getToastPrefix();
-                player.sendMessage(translateLegacy(prefix + msg.getMessage()));
+                player.sendMessage(ColorUtil.translate(prefix + msg.getMessage()));
             } else {
                 // Center screen announcement with custom title
                 World world = universe.getWorld(player.getWorldUuid());
@@ -121,8 +132,8 @@ public class MessageScheduler {
 
                     EventTitleUtil.showEventTitleToPlayer(
                             player,
-                            translateLegacy(title),
-                            translateLegacy(subtitle),
+                            ColorUtil.translate(title),
+                            ColorUtil.translate(subtitle),
                             true);
                 }
             }
@@ -130,115 +141,6 @@ public class MessageScheduler {
 
         plugin.getLogger().atInfo().log(
                 "Broadcasted scheduled message to " + playerCount + " player(s): " + msg.getMessage());
-    }
-
-    /**
-     * Translates legacy color codes to Message format.
-     */
-    private Message translateLegacy(String text) {
-        text = text.replace("&", "§");
-        if (!text.contains("§")) {
-            return Message.raw(text);
-        }
-
-        List<Message> parts = new ArrayList<>();
-        String[] split = text.split("§");
-
-        if (!split[0].isEmpty()) {
-            parts.add(Message.raw(split[0]));
-        }
-
-        String currentColor = null;
-        boolean isBold = false;
-        boolean isItalic = false;
-
-        for (int i = 1; i < split.length; i++) {
-            String part = split[i];
-            if (part.isEmpty())
-                continue;
-
-            char code = part.charAt(0);
-            String remaining = part.substring(1);
-
-            switch (code) {
-                case '0':
-                    currentColor = "black";
-                    break;
-                case '1':
-                    currentColor = "dark_blue";
-                    break;
-                case '2':
-                    currentColor = "dark_green";
-                    break;
-                case '3':
-                    currentColor = "dark_aqua";
-                    break;
-                case '4':
-                    currentColor = "dark_red";
-                    break;
-                case '5':
-                    currentColor = "dark_purple";
-                    break;
-                case '6':
-                    currentColor = "gold";
-                    break;
-                case '7':
-                    currentColor = "gray";
-                    break;
-                case '8':
-                    currentColor = "dark_gray";
-                    break;
-                case '9':
-                    currentColor = "blue";
-                    break;
-                case 'a':
-                    currentColor = "green";
-                    break;
-                case 'b':
-                    currentColor = "aqua";
-                    break;
-                case 'c':
-                    currentColor = "red";
-                    break;
-                case 'd':
-                    currentColor = "light_purple";
-                    break;
-                case 'e':
-                    currentColor = "yellow";
-                    break;
-                case 'f':
-                    currentColor = "white";
-                    break;
-                case 'l':
-                    isBold = true;
-                    break;
-                case 'o':
-                    isItalic = true;
-                    break;
-                case 'r':
-                    currentColor = null;
-                    isBold = false;
-                    isItalic = false;
-                    break;
-            }
-
-            if (!remaining.isEmpty()) {
-                Message m = Message.raw(remaining);
-                if (currentColor != null)
-                    m.color(currentColor);
-                if (isBold)
-                    m.bold(true);
-                if (isItalic)
-                    m.italic(true);
-                parts.add(m);
-            }
-        }
-
-        if (parts.isEmpty())
-            return Message.empty();
-        if (parts.size() == 1)
-            return parts.get(0);
-        return Message.join(parts.toArray(new Message[0]));
     }
 
     /**

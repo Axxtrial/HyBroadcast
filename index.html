@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HyBroadcaster - Message Generator</title>
+    <title>HyBroadcaster - Message Generator & Editor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
         rel="stylesheet">
@@ -74,6 +74,16 @@
             transform: translateX(100%);
             background-color: #22d3ee;
         }
+
+        /* Estilos para la previsualización de colores */
+        .preview-box {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            min-height: 100px;
+            border: 1px dashed #4a5568;
+            word-wrap: break-word;
+        }
     </style>
 </head>
 
@@ -90,9 +100,18 @@
 
     <div class="max-w-3xl w-full card rounded-[2.5rem] shadow-2xl p-8 md:p-12">
         <div class="mb-10">
-            <h1 class="text-3xl font-extrabold text-white" id="txt-title">HyBroadcaster Generator</h1>
-            <p class="text-slate-400 text-sm mt-2" id="txt-subtitle">Create a new message for your scheduledMessages
-                list.</p>
+            <h1 class="text-3xl font-extrabold text-white" id="txt-title">HyBroadcaster Editor</h1>
+            <p class="text-slate-400 text-sm mt-2" id="txt-subtitle">Create and preview colorful messages for your
+                server.</p>
+        </div>
+
+        <div class="mb-8 space-y-3">
+            <label class="text-[10px] font-bold text-cyan-400 uppercase tracking-widest px-1" id="label-preview">Live
+                Preview</label>
+            <div class="preview-box">
+                <div id="preview-title" class="text-lg font-bold mb-1 empty:hidden"></div>
+                <div id="preview-text" class="text-base text-slate-300"></div>
+            </div>
         </div>
 
         <div class="flex border-b border-slate-700 mb-8 gap-8 text-slate-500">
@@ -137,10 +156,10 @@
 
         <div class="space-y-6 bg-slate-900/30 p-6 rounded-3xl border border-slate-700 mb-8">
             <div class="space-y-2">
-                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest" id="label-title">Title
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest" id="label-title-inp">Title
                     (Optional)</label>
                 <input type="text" id="msg-title" oninput="genCron()" class="input-field w-full rounded-xl px-4 py-3"
-                    placeholder="DAILY TOURNAMENT">
+                    placeholder="&b&lDAILY TOURNAMENT">
             </div>
 
             <div class="space-y-2">
@@ -148,7 +167,8 @@
                     Content</label>
                 <textarea id="msg-text" oninput="genCron()"
                     class="input-field w-full rounded-xl px-4 py-3 h-24 resize-none"
-                    placeholder="Welcome to the server!"></textarea>
+                    placeholder="Welcome to &a&lHytale&r!"></textarea>
+                <p class="text-[9px] text-slate-500 italic">Use & + color code (0-f) or &#hex for custom colors.</p>
             </div>
 
             <div class="flex items-center justify-between pt-4 border-t border-slate-700/50">
@@ -187,22 +207,44 @@
         let currentLang = 'en';
         let selectedDays = ['*'];
 
+        const colorMap = {
+            '0': '#000000', '1': '#0000AA', '2': '#00AA00', '3': '#00AAAA',
+            '4': '#AA0000', '5': '#AA00AA', '6': '#FFAA00', '7': '#AAAAAA',
+            '8': '#555555', '9': '#5555FF', 'a': '#55FF55', 'b': '#55FFFF',
+            'c': '#FF5555', 'd': '#FF55FF', 'e': '#FFFF55', 'f': '#FFFFFF'
+        };
+
         const i18n = {
             en: {
-                title: "HyBroadcaster Tool", subtitle: "Generate message objects for your scheduledMessages list.",
+                title: "HyBroadcaster Editor", subtitle: "Create and preview colorful messages for your server.",
                 label_min: "Minute", label_hour: "Hour", label_msg: "Message Content", label_title: "Title (Optional)",
-                every: "Every?", copy: "Copy Object", copied: "COPIED!",
+                every: "Every?", copy: "Copy Object", copied: "COPIED!", label_preview: "Live Preview",
                 toast: "Display as Emblem (Toast)?", toast_desc: "Big screen notification vs small chat text.",
                 days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], msg_pre: "Will run "
             },
             es: {
-                title: "Herramienta HyBroadcaster", subtitle: "Genera objetos de mensaje para tu lista scheduledMessages.",
+                title: "Editor HyBroadcaster", subtitle: "Crea y previsualiza mensajes con colores para tu servidor.",
                 label_min: "Minuto", label_hour: "Hora", label_msg: "Contenido del Mensaje", label_title: "Título (Opcional)",
-                every: "¿Cada?", copy: "Copiar Objeto", copied: "¡COPIADO!",
+                every: "¿Cada?", copy: "Copiar Objeto", copied: "¡COPIADO!", label_preview: "Vista Previa",
                 toast: "¿Mostrar como Emblema (Toast)?", toast_desc: "Notificación grande vs texto pequeño en chat.",
                 days: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"], msg_pre: "Se ejecutará "
             }
         };
+
+        function parseColors(text) {
+            if (!text) return "";
+            // Soporte para Hex: &#FFFFFF
+            let parsed = text.replace(/&#([0-9a-fA-F]{6})/g, '<span style="color:#$1">');
+            // Soporte para códigos básicos: &a, &b, etc.
+            parsed = parsed.replace(/&([0-9a-fA-F])/g, (match, code) => {
+                return `</span><span style="color:${colorMap[code.toLowerCase()]}">`;
+            });
+            // Soporte para estilos (negrita, etc - simplificado)
+            parsed = parsed.replace(/&l/g, '<span style="font-weight:bold">');
+            parsed = parsed.replace(/&r/g, '</span><span style="color:inherit;font-weight:normal">');
+
+            return `<span>${parsed}</span>`;
+        }
 
         function setLanguage(lang) {
             currentLang = lang;
@@ -212,7 +254,8 @@
             document.getElementById('label-min').innerText = t.label_min;
             document.getElementById('label-hour').innerText = t.label_hour;
             document.getElementById('label-msg').innerText = t.label_msg;
-            document.getElementById('label-title').innerText = t.label_title;
+            document.getElementById('label-title-inp').innerText = t.label_title;
+            document.getElementById('label-preview').innerText = t.label_preview;
             document.getElementById('txt-every-m').innerText = t.every;
             document.getElementById('txt-every-h-check').innerText = t.every;
             document.getElementById('txt-is-toast').innerText = t.toast;
@@ -260,7 +303,10 @@
 
             const cron = `${m} ${h} * * ${selectedDays.sort().join(',')}`;
 
-            // OBJETO DE MENSAJE LIMPIO PARA LA LISTA
+            // Actualizar Previsualización
+            document.getElementById('preview-title').innerHTML = parseColors(title);
+            document.getElementById('preview-text').innerHTML = parseColors(msg);
+
             const jsonObj = {
                 schedule: cron,
                 isToast: isToast,

@@ -65,4 +65,21 @@ public class HyAnnouncesPlugin extends JavaPlugin {
     public MessageScheduler getMessageScheduler() {
         return messageScheduler;
     }
+
+    public void reloadMessageScheduler() {
+        // Stop existing scheduler if running
+        if (messageScheduler != null) {
+            messageScheduler.shutdown();
+            messageScheduler = null;
+        }
+
+        // Start new scheduler if enabled
+        if (configManager.getConfig().isEnableScheduledMessages()) {
+            messageScheduler = new MessageScheduler(this);
+            messageScheduler.start(configManager.getConfig().getScheduledMessages());
+            getLogger().atInfo().log("Scheduled messages enabled and started");
+        } else {
+            getLogger().atInfo().log("Scheduled messages are disabled");
+        }
+    }
 }
