@@ -13,6 +13,8 @@ public class PluginConfig {
     private boolean enableScheduledMessages;
     private boolean useUtc;
     private boolean simpleMode;
+    private boolean showTimestamp; // Added field
+    private boolean enableLagProtection; // Added field
     private String toastPrefix;
     private List<ScheduledMessage> scheduledMessages;
 
@@ -21,6 +23,24 @@ public class PluginConfig {
         this.toastPrefix = "[ANNOUNCEMENT] "; // Default prefix
         this.enableScheduledMessages = true; // Default enabled
         this.useUtc = false; // Default local time
+        this.showTimestamp = false; // Default disabled
+        this.enableLagProtection = true; // Default enabled
+    }
+
+    public boolean isShowTimestamp() {
+        return showTimestamp;
+    }
+
+    public void setShowTimestamp(boolean showTimestamp) {
+        this.showTimestamp = showTimestamp;
+    }
+
+    public boolean isEnableLagProtection() {
+        return enableLagProtection;
+    }
+
+    public void setEnableLagProtection(boolean enableLagProtection) {
+        this.enableLagProtection = enableLagProtection;
     }
 
     public String getPluginName() {

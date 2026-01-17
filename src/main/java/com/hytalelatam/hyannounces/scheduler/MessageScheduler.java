@@ -88,6 +88,12 @@ public class MessageScheduler {
                     if (!active)
                         return; // double check before rescheduling
 
+                    if (delay < 1000 && plugin.getConfigManager().getConfig().isEnableLagProtection()) {
+                        // Anti-Overlap / Anti-Spam safety
+                        // If delay is extremely small (e.g. catch-up), force at least 1 second wait
+                        delay = 1000;
+                    }
+
                     // Use the captured executor instance
                     // If this executor is shutdown (due to reload), this will throw
                     // RejectedExecutionException
@@ -146,6 +152,12 @@ public class MessageScheduler {
             if (msg.isToast()) {
                 // Toast notification (action bar message with custom prefix)
                 String prefix = plugin.getConfigManager().getConfig().getToastPrefix();
+                // Timestamp logic
+                if (plugin.getConfigManager().getConfig().isShowTimestamp()) {
+                    String time = java.time.LocalTime.now()
+                            .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+                    prefix = "[" + time + "] " + prefix;
+                }
                 player.sendMessage(ColorUtil.translate(prefix + msg.getMessage()));
             } else {
                 // Center screen announcement with custom title
@@ -161,6 +173,17 @@ public class MessageScheduler {
                             ? msg.getMessage()
                             : "Automatic Announcement";
 
+                    // Timestamp logic for Title/Subtitle? Usually not desired on titles, but maybe
+                    // on subtitle?
+                    // User request said "Implement Timestamps in Chat", implies toasts/chat
+                    // messages.
+                    // I will apply it to Subtitle if it acts as the message body.
+                    if (plugin.getConfigManager().getConfig().isShowTimestamp()) {
+                        String time = java.time.LocalTime.now()
+                                .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+                        subtitle = "[" + time + "] " + subtitle;
+                    }
+
                     EventTitleUtil.showEventTitleToPlayer(
                             player,
                             ColorUtil.translate(title),
@@ -170,7 +193,9 @@ public class MessageScheduler {
             }
         });
 
-        if (plugin.getConfigManager().getConfig().isDebugMode()) {
+        if (plugin.getConfigManager().getConfig().isDebugMode())
+
+        {
             plugin.getLogger().atInfo().log(
                     "[ID: " + schedulerId + "] Broadcasted scheduled message to " + playerCount + " player(s): "
                             + msg.getMessage());

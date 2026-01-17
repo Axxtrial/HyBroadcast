@@ -1,11 +1,13 @@
 {
   "pluginName": "HyBroadcaster",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "debugMode": false,
   "simpleMode": false,
+  "enableLagProtection": true,
   "enableScheduledMessages": true,
   "useUtc": false,
   "toastPrefix": "[ANNOUNCEMENT] ",
+  "showTimestamp": false,
   "scheduledMessages": [
     {
       "schedule": "*/30 * * * *",

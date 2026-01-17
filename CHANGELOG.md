@@ -1,3 +1,8 @@
+### Version 1.4.1
+* **Fixed:** **Strict Lag Protection**. The scheduler now enforces a strict minimum delay (1s) between messages to prevent overlapping. Controlled via `"enableLagProtection"` (default: `true`).
+* **New:** **Timestamps**. Added `"showTimestamp": true` option to `config.json` to prefix messages with `[HH:mm]`.
+* **Improved:** Updated to latest stable build.
+
 ### Version 1.4.0
 * **New:** Added **Simple Mode**. You can now use simple durations (e.g., `"10s"`, `"5m"`, `"1h"`) in `config.json` instead of complex Cron expressions. Enable it by setting `"simpleMode": true`.
 * **Fixed:** Implemented **Lag Protection**. The scheduler now uses recursive delays, ensuring that if the server lags or freezes, messages do not accumulate and spam the chat upon recovery.
