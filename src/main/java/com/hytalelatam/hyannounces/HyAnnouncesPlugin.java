@@ -66,9 +66,10 @@ public class HyAnnouncesPlugin extends JavaPlugin {
         return messageScheduler;
     }
 
-    public void reloadMessageScheduler() {
+    public synchronized void reloadMessageScheduler() {
         // Stop existing scheduler if running
         if (messageScheduler != null) {
+            getLogger().atInfo().log("Shutting down existing scheduler instance...");
             messageScheduler.shutdown();
             messageScheduler = null;
         }

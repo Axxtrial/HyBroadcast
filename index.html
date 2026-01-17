@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
         rel="stylesheet">
+    <link rel="icon" type="image/png" href="HyBroadcast-ICON.png">
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -39,6 +40,22 @@
         .tab-active {
             border-bottom-color: #22d3ee;
             color: #22d3ee;
+        }
+
+        .nav-item {
+            transition: all 0.3s;
+            color: #94a3b8;
+        }
+
+        .nav-active {
+            color: #22d3ee;
+            background: rgba(34, 211, 238, 0.1);
+        }
+
+        .glass-nav {
+            background: rgba(22, 27, 44, 0.7);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(45, 55, 72, 0.5);
         }
 
         .custom-checkbox {
@@ -87,145 +104,63 @@
     </style>
 </head>
 
-<body class="text-slate-200 min-h-screen flex items-center justify-center p-4 py-12">
+<body class="text-slate-200 min-h-screen flex flex-col items-center pb-24">
 
-    <div class="fixed top-6 right-6 flex gap-2">
-        <button onclick="setLanguage('en')"
-            class="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-lg text-xs font-bold border border-slate-700 transition"
-            id="lang-en">EN</button>
-        <button onclick="setLanguage('es')"
-            class="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-lg text-xs font-bold border border-slate-700 transition"
-            id="lang-es">ES</button>
-        <a href="wiki.html"
-            class="bg-cyan-900/50 hover:bg-cyan-900/70 text-cyan-400 px-3 py-1 rounded-lg text-xs font-bold border border-cyan-800 transition flex items-center gap-1">
-            <span>📚</span> Wiki
-        </a>
-    </div>
-
-    <div class="max-w-3xl w-full card rounded-[2.5rem] shadow-2xl p-8 md:p-12">
-        <div class="mb-10">
-            <h1 class="text-3xl font-extrabold text-white" id="txt-title">HyBroadcaster Editor</h1>
-            <p class="text-slate-400 text-sm mt-2" id="txt-subtitle">Create and preview colorful messages for your
-                server.</p>
-        </div>
-
-        <div class="mb-8 space-y-3">
-            <label class="text-[10px] font-bold text-cyan-400 uppercase tracking-widest px-1" id="label-preview">Live
-                Preview</label>
-            <div class="preview-box">
-                <div id="preview-title" class="text-lg font-bold mb-1 empty:hidden"></div>
-                <div id="preview-text" class="text-base text-slate-300"></div>
-            </div>
-        </div>
-
-        <!-- Mode Switcher -->
-        <div class="flex items-center justify-between bg-slate-900/50 p-4 rounded-2xl border border-slate-700 mb-8">
-            <div>
-                <p class="text-sm font-bold text-white" id="txt-simple-mode">Use Simple Mode?</p>
-                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tighter" id="txt-simple-desc">
-                    Easy durations vs Advanced Cron.</p>
-            </div>
-            <label class="flex items-center cursor-pointer">
-                <div class="relative">
-                    <input type="checkbox" id="simple-mode-check" class="sr-only" onchange="toggleMode()">
-                    <div class="block bg-slate-800 w-14 h-8 rounded-full border border-slate-600"></div>
-                    <div
-                        class="toggle-dot absolute left-1 top-1 bg-slate-400 w-6 h-6 rounded-full transition shadow-sm">
-                    </div>
+    <!-- Global Nav Bar -->
+    <nav class="glass-nav sticky top-0 z-50 px-6 py-4 mb-12 w-full">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/10 overflow-hidden">
+                    <img src="HyBroadcast-ICON.png" alt="Logo" class="w-full h-full object-cover">
                 </div>
-            </label>
-        </div>
-
-        <!-- Start Cron Editor -->
-        <div id="cron-editor">
-            <div class="flex border-b border-slate-700 mb-8 gap-8 text-slate-500">
-                <button onclick="switchTab('simple')" id="btn-simple"
-                    class="tab-btn pb-4 text-xs font-black uppercase tracking-widest tab-active">Time Settings</button>
-                <button onclick="switchTab('weekly')" id="btn-weekly"
-                    class="tab-btn pb-4 text-xs font-black uppercase tracking-widest">Days</button>
+                <span class="font-extrabold text-xl tracking-tight text-white">HyBroadcaster <span
+                        class="text-cyan-400">Suite</span></span>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div class="space-y-2">
-                    <div class="flex justify-between items-center px-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
-                            id="label-min">Minute</label>
-                        <label class="flex items-center gap-2 cursor-pointer group">
-                            <span class="text-[10px] font-bold text-slate-500 group-hover:text-cyan-400 transition"
-                                id="txt-every-m">Every?</span>
-                            <input type="checkbox" id="check-m" onchange="genCron()" class="custom-checkbox">
-                        </label>
-                    </div>
-                    <input type="text" id="cron-m" value="0" oninput="genCron()"
-                        class="input-field w-full rounded-xl px-4 py-3 font-mono">
-                </div>
-                <div class="space-y-2">
-                    <div class="flex justify-between items-center px-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
-                            id="label-hour">Hour</label>
-                        <label class="flex items-center gap-2 cursor-pointer group">
-                            <span class="text-[10px] font-bold text-slate-500 group-hover:text-cyan-400 transition"
-                                id="txt-every-h-check">Every?</span>
-                            <input type="checkbox" id="check-h" onchange="genCron()" class="custom-checkbox">
-                        </label>
-                    </div>
-                    <input type="text" id="cron-h" value="*" oninput="genCron()"
-                        class="input-field w-full rounded-xl px-4 py-3 font-mono">
+            <div class="flex items-center gap-2 bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800">
+                <a href="index.html" class="nav-item nav-active px-4 py-2 rounded-xl text-xs font-bold transition"
+                    id="nav-gen">Generator</a>
+                <a href="config-editor.html"
+                    class="nav-item px-4 py-2 rounded-xl text-xs font-bold hover:text-white transition"
+                    id="nav-config">Global Config</a>
+                <a href="wiki.html" class="nav-item px-4 py-2 rounded-xl text-xs font-bold hover:text-white transition"
+                    id="nav-wiki">Wiki</a>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="flex gap-1 bg-slate-900 border border-slate-700 p-1 rounded-lg">
+                    <button onclick="setLanguage('en')"
+                        class="px-2 py-1 rounded text-[10px] font-bold transition hover:bg-slate-800"
+                        id="lang-en">EN</button>
+                    <button onclick="setLanguage('es')"
+                        class="px-2 py-1 rounded text-[10px] font-bold transition hover:bg-slate-800"
+                        id="lang-es">ES</button>
                 </div>
             </div>
-
-            <div id="panel-weekly" class="hidden bg-slate-900/50 p-6 rounded-2xl border border-slate-700 mb-8">
-                <div class="flex flex-wrap gap-2" id="day-container"></div>
-            </div>
         </div>
-        <!-- End Cron Editor -->
+    </nav>
 
-        <!-- Start Simple Editor -->
-        <div id="simple-editor" class="hidden mb-8">
-            <div class="space-y-2">
-                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
-                    id="label-duration">Duration</label>
-                <div class="flex gap-2">
-                    <input type="number" id="simple-val" value="10" oninput="genCron()"
-                        class="input-field w-24 rounded-xl px-4 py-3 font-mono text-center">
-                    <select id="simple-unit" onchange="genCron()"
-                        class="input-field flex-1 rounded-xl px-4 py-3 font-bold bg-slate-900">
-                        <option value="s">Seconds (s)</option>
-                        <option value="m">Minutes (m)</option>
-                        <option value="h">Hours (h)</option>
-                    </select>
-                </div>
-                <p class="text-[10px] text-slate-500 italic" id="simple-hint">e.g., 10s = Every 10 seconds.</p>
-            </div>
-        </div>
-        <!-- End Simple Editor -->
-
-        <div class="space-y-6 bg-slate-900/30 p-6 rounded-3xl border border-slate-700 mb-8">
-            <div class="space-y-2">
-                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest" id="label-title-inp">Title
-                    (Optional)</label>
-                <input type="text" id="msg-title" oninput="genCron()" class="input-field w-full rounded-xl px-4 py-3"
-                    placeholder="&b&lDAILY TOURNAMENT">
+    <div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-[1fr,420px] gap-8 items-start relative">
+        <!-- Dashboard Left: Form and Controls -->
+        <div class="card rounded-[2.5rem] shadow-2xl p-8 md:p-10">
+            <div class="mb-10">
+                <h1 class="text-3xl font-extrabold text-white" id="txt-title">HyBroadcaster Editor</h1>
+                <p class="text-slate-400 text-sm mt-2" id="txt-subtitle">Create and preview colorful messages for your
+                    server.</p>
             </div>
 
-            <div class="space-y-2">
-                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest" id="label-msg">Message
-                    Content</label>
-                <textarea id="msg-text" oninput="genCron()"
-                    class="input-field w-full rounded-xl px-4 py-3 h-24 resize-none"
-                    placeholder="Welcome to &a&lHytale&r!"></textarea>
-                <p class="text-[9px] text-slate-500 italic">Use & + color code (0-f) or &#hex for custom colors.</p>
-            </div>
 
-            <div class="flex items-center justify-between pt-4 border-t border-slate-700/50">
+            <!-- Mode Switcher -->
+            <div class="flex items-center justify-between bg-slate-900/50 p-4 rounded-2xl border border-slate-700 mb-8">
                 <div>
-                    <p class="text-sm font-bold text-white" id="txt-is-toast">Display as Emblem (Toast)?</p>
-                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tighter" id="txt-is-toast-desc">
-                        Big screen notification vs small chat text.</p>
+                    <p class="text-sm font-bold text-white" id="txt-simple-mode">Use Simple Mode?</p>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tighter" id="txt-simple-desc">
+                        Easy durations vs Advanced Cron.</p>
                 </div>
                 <label class="flex items-center cursor-pointer">
                     <div class="relative">
-                        <input type="checkbox" id="is-toast-check" class="sr-only" onchange="genCron()">
+                        <input type="checkbox" id="simple-mode-check" class="sr-only" onchange="toggleMode()">
                         <div class="block bg-slate-800 w-14 h-8 rounded-full border border-slate-600"></div>
                         <div
                             class="toggle-dot absolute left-1 top-1 bg-slate-400 w-6 h-6 rounded-full transition shadow-sm">
@@ -233,19 +168,166 @@
                     </div>
                 </label>
             </div>
+
+            <!-- Start Cron Editor -->
+            <div id="cron-editor">
+                <div class="flex border-b border-slate-700 mb-8 gap-8 text-slate-500">
+                    <button onclick="switchTab('simple')" id="btn-simple"
+                        class="tab-btn pb-4 text-xs font-black uppercase tracking-widest tab-active">Time
+                        Settings</button>
+                    <button onclick="switchTab('weekly')" id="btn-weekly"
+                        class="tab-btn pb-4 text-xs font-black uppercase tracking-widest">Days</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center px-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                                id="label-min">Minute</label>
+                            <label class="flex items-center gap-2 cursor-pointer group">
+                                <span class="text-[10px] font-bold text-slate-500 group-hover:text-cyan-400 transition"
+                                    id="txt-every-m">Every?</span>
+                                <input type="checkbox" id="check-m" onchange="genCron()" class="custom-checkbox">
+                            </label>
+                        </div>
+                        <input type="text" id="cron-m" value="0" oninput="genCron()"
+                            class="input-field w-full rounded-xl px-4 py-3 font-mono">
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center px-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                                id="label-hour">Hour</label>
+                            <label class="flex items-center gap-2 cursor-pointer group">
+                                <span class="text-[10px] font-bold text-slate-500 group-hover:text-cyan-400 transition"
+                                    id="txt-every-h-check">Every?</span>
+                                <input type="checkbox" id="check-h" onchange="genCron()" class="custom-checkbox">
+                            </label>
+                        </div>
+                        <input type="text" id="cron-h" value="*" oninput="genCron()"
+                            class="input-field w-full rounded-xl px-4 py-3 font-mono">
+                    </div>
+                </div>
+
+                <div id="panel-weekly" class="hidden bg-slate-900/50 p-6 rounded-2xl border border-slate-700 mb-8">
+                    <div class="flex flex-wrap gap-2" id="day-container"></div>
+                </div>
+            </div>
+            <!-- End Cron Editor -->
+
+            <!-- Start Simple Editor -->
+            <div id="simple-editor" class="hidden mb-8">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                        id="label-duration">Duration</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="simple-val" value="10" oninput="genCron()"
+                            class="input-field w-24 rounded-xl px-4 py-3 font-mono text-center">
+                        <select id="simple-unit" onchange="genCron()"
+                            class="input-field flex-1 rounded-xl px-4 py-3 font-bold bg-slate-900">
+                            <option value="s">Seconds (s)</option>
+                            <option value="m">Minutes (m)</option>
+                            <option value="h">Hours (h)</option>
+                        </select>
+                    </div>
+                    <p class="text-[10px] text-slate-500 italic" id="simple-hint">e.g., 10s = Every 10 seconds.</p>
+                </div>
+            </div>
+            <!-- End Simple Editor -->
+
+            <div class="space-y-6 bg-slate-900/30 p-6 rounded-3xl border border-slate-700 mb-8">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                        id="label-title-inp">Title
+                        (Optional)</label>
+                    <input type="text" id="msg-title" oninput="genCron()"
+                        class="input-field w-full rounded-xl px-4 py-3" placeholder="&b&lDAILY TOURNAMENT">
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest" id="label-msg">Message
+                        Content</label>
+                    <textarea id="msg-text" oninput="genCron()"
+                        class="input-field w-full rounded-xl px-4 py-3 h-24 resize-none"
+                        placeholder="Welcome to &a&lHytale&r!"></textarea>
+                    <p class="text-[9px] text-slate-500 italic">Use & + color code (0-f) or &#hex for custom colors.</p>
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-slate-700/50">
+                    <div>
+                        <p class="text-sm font-bold text-white" id="txt-is-toast">Display as Emblem (Toast)?</p>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tighter"
+                            id="txt-is-toast-desc">
+                            Big screen notification vs small chat text.</p>
+                    </div>
+                    <label class="flex items-center cursor-pointer">
+                        <div class="relative">
+                            <input type="checkbox" id="is-toast-check" class="sr-only" onchange="genCron()">
+                            <div class="block bg-slate-800 w-14 h-8 rounded-full border border-slate-600"></div>
+                            <div
+                                class="toggle-dot absolute left-1 top-1 bg-slate-400 w-6 h-6 rounded-full transition shadow-sm">
+                            </div>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Sound Toggle -->
+                <div class="flex items-center justify-between pt-4 border-t border-slate-700/50">
+                    <div>
+                        <p class="text-sm font-bold text-white" id="txt-enable-sound">Enable Custom Sound?</p>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tighter" id="txt-sound-desc">
+                            Play an SFX when the message appears.</p>
+                    </div>
+                    <label class="flex items-center cursor-pointer">
+                        <div class="relative">
+                            <input type="checkbox" id="sound-check" class="sr-only" onchange="toggleSoundField()">
+                            <div class="block bg-slate-800 w-14 h-8 rounded-full border border-slate-600"></div>
+                            <div
+                                class="toggle-dot absolute left-1 top-1 bg-slate-400 w-6 h-6 rounded-full transition shadow-sm">
+                            </div>
+                        </div>
+                    </label>
+                </div>
+
+                <div id="sound-field-container" class="hidden space-y-2 pt-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                        id="label-sound-name">Sound ID</label>
+                    <input type="text" id="sound-name" oninput="genCron()"
+                        class="input-field w-full rounded-xl px-4 py-3" placeholder="SFX_Avatar_Powers_Enable_Local">
+                </div>
+            </div>
         </div>
 
-        <div class="bg-slate-950 rounded-[2rem] p-8 border border-cyan-500/20 shadow-2xl">
-            <p class="text-[10px] font-black text-cyan-500 uppercase tracking-[0.25em] mb-4">Message JSON Object</p>
-            <pre id="json-output"
-                class="text-cyan-400 font-mono text-xs leading-relaxed overflow-x-auto p-5 bg-slate-900/80 rounded-2xl border border-slate-800 mb-6"></pre>
+        <!-- Dashboard Right: Sticky Result -->
+        <div class="lg:sticky lg:top-8 space-y-6">
+            <div class="bg-slate-950 rounded-[2.5rem] p-8 border border-cyan-500/20 shadow-2xl flex flex-col h-full">
+                <p class="text-[10px] font-black text-cyan-500 uppercase tracking-[0.25em] mb-4">Message JSON Object</p>
 
-            <div class="flex flex-col md:flex-row items-center justify-between gap-6 border-t border-slate-800 pt-6">
-                <p id="human-readable" class="text-[11px] text-slate-500 italic flex-1"></p>
-                <button onclick="copyToClipboard()" id="copy-btn"
-                    class="w-full md:w-auto bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-10 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-cyan-500/10">Copy
-                    Code</button>
+                <div class="relative flex-1">
+                    <pre id="json-output"
+                        class="text-cyan-400 font-mono text-xs leading-relaxed overflow-x-auto p-5 bg-slate-900/80 rounded-2xl border border-slate-800 mb-6 h-[300px] lg:h-[400px]"></pre>
+                </div>
+
+                <div class="space-y-6 border-t border-slate-800 pt-6">
+                    <p id="human-readable" class="text-[11px] text-slate-500 italic"></p>
+                    <button onclick="copyToClipboard()" id="copy-btn"
+                        class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-cyan-500/10">Copy
+                        Code</button>
+                </div>
             </div>
+
+            <!-- Dashboard Preview (Moved here) -->
+            <div class="bg-slate-900/50 rounded-[2.5rem] p-8 border border-slate-700 shadow-xl space-y-4">
+                <label class="text-[10px] font-bold text-cyan-500 uppercase tracking-widest px-1"
+                    id="label-preview">Live Preview</label>
+                <div class="preview-box !bg-slate-950/50 !border-slate-800">
+                    <div id="preview-title" class="text-lg font-bold mb-1 empty:hidden"></div>
+                    <div id="preview-text" class="text-base text-slate-300"></div>
+                </div>
+            </div>
+
+            <p class="text-center text-[10px] text-slate-600 font-bold uppercase tracking-tighter italic">
+                Tip: Copy this object into the "scheduledMessages" list in your config.json
+            </p>
         </div>
     </div>
 
@@ -268,7 +350,10 @@
                 toast: "Display as Emblem (Toast)?", toast_desc: "Big screen notification vs small chat text.",
                 days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], msg_pre: "Will run ",
                 simple_mode: "Use Simple Mode?", simple_desc: "Easy durations vs Advanced Cron.",
-                label_duration: "Duration", simple_hint: "e.g., 10s = Every 10 seconds."
+                label_duration: "Duration", simple_hint: "e.g., 10s = Every 10 seconds.",
+                enable_sound: "Enable Custom Sound?", sound_desc: "Play an SFX when the message appears.",
+                label_sound_name: "Sound ID",
+                nav_gen: "Generator", nav_config: "Global Config", nav_wiki: "Wiki"
             },
             es: {
                 title: "Editor HyBroadcaster", subtitle: "Crea y previsualiza mensajes con colores para tu servidor.",
@@ -277,7 +362,10 @@
                 toast: "¿Mostrar como Emblema (Toast)?", toast_desc: "Notificación grande vs texto pequeño en chat.",
                 days: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"], msg_pre: "Se ejecutará ",
                 simple_mode: "¿Modo Simple?", simple_desc: "Duraciones fáciles vs Cron avanzado.",
-                label_duration: "Duración", simple_hint: "ej. 10s = Cada 10 segundos."
+                label_duration: "Duración", simple_hint: "ej. 10s = Cada 10 segundos.",
+                enable_sound: "¿Activar Sonido?", sound_desc: "Reproduce un SFX cuando aparezca el mensaje.",
+                label_sound_name: "ID del Sonido",
+                nav_gen: "Generador", nav_config: "Config Global", nav_wiki: "Wiki"
             }
         };
 
@@ -297,6 +385,7 @@
         }
 
         function setLanguage(lang) {
+            localStorage.setItem('lang', lang);
             currentLang = lang;
             const t = i18n[lang];
             document.getElementById('txt-title').innerText = t.title;
@@ -315,7 +404,23 @@
             document.getElementById('txt-simple-desc').innerText = t.simple_desc;
             document.getElementById('label-duration').innerText = t.label_duration;
             document.getElementById('simple-hint').innerText = t.simple_hint;
+            document.getElementById('txt-enable-sound').innerText = t.enable_sound;
+            document.getElementById('txt-sound-desc').innerText = t.sound_desc;
+            document.getElementById('label-sound-name').innerText = t.label_sound_name;
+            document.getElementById('nav-gen').innerText = t.nav_gen;
+            document.getElementById('nav-config').innerText = t.nav_config;
+            document.getElementById('nav-wiki').innerText = t.nav_wiki;
             renderDays(); genCron();
+        }
+
+        // Initialize with persistence
+        const savedLang = localStorage.getItem('lang') || 'en';
+        setLanguage(savedLang);
+
+        function toggleSoundField() {
+            const hasSound = document.getElementById('sound-check').checked;
+            document.getElementById('sound-field-container').classList.toggle('hidden', !hasSound);
+            genCron();
         }
 
         function toggleMode() {
@@ -357,6 +462,8 @@
             const title = document.getElementById('msg-title').value || "";
             const msg = document.getElementById('msg-text').value || "Welcome to our server!";
             const isToast = document.getElementById('is-toast-check').checked;
+            const hasSound = document.getElementById('sound-check').checked;
+            const soundName = document.getElementById('sound-name').value || "SFX_Avatar_Powers_Enable_Local";
 
             let scheduleVal = "";
 
@@ -382,6 +489,10 @@
                 title: title,
                 message: msg
             };
+
+            if (hasSound) {
+                jsonObj.sound = soundName;
+            }
 
             document.getElementById('json-output').innerText = JSON.stringify(jsonObj, null, 4);
 

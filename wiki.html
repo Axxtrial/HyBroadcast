@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
         rel="stylesheet">
+    <link rel="icon" type="image/png" href="HyBroadcast-ICON.png">
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -29,24 +30,136 @@
             color: #22d3ee;
             font-weight: bold;
         }
+
+        .command-block {
+            background: #1e253c;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            border: 1px solid #3d4661;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .command-block:hover {
+            border-color: #22d3ee;
+            transform: translateY(-2px);
+        }
+
+        .command-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .command-name {
+            color: #22d3ee;
+            font-weight: 800;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .command-permission {
+            font-size: 0.65rem;
+            background: #22d3ee20;
+            color: #22d3ee;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .command-usage {
+            background: #0b0f1a;
+            padding: 1rem;
+            border-radius: 1rem;
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 1rem;
+            border: 1px solid #2d3748;
+        }
+
+        .command-usage code {
+            color: #e2e8f0;
+        }
+
+        .command-tip {
+            margin-top: 1rem;
+            font-size: 0.7rem;
+            color: #22d3ee;
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-start;
+        }
+
+        .command-tip strong {
+            color: #fff;
+            background: #22d3ee;
+            padding: 0 0.3rem;
+            border-radius: 4px;
+            color: #0b0f1a;
+        }
+
+        .nav-item {
+            transition: all 0.3s;
+            color: #94a3b8;
+        }
+
+        .nav-active {
+            color: #22d3ee;
+            background: rgba(34, 211, 238, 0.1);
+        }
+
+        .glass-nav {
+            background: rgba(22, 27, 44, 0.7);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(45, 55, 72, 0.5);
+        }
     </style>
 </head>
 
-<body class="text-slate-200 min-h-screen flex flex-col items-center p-4 py-12">
+<body class="text-slate-200 min-h-screen flex flex-col items-center pb-24">
 
-    <div class="fixed top-6 right-6 flex gap-2">
-        <button onclick="setLanguage('en')"
-            class="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-lg text-xs font-bold border border-slate-700 transition"
-            id="lang-en">EN</button>
-        <button onclick="setLanguage('es')"
-            class="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-lg text-xs font-bold border border-slate-700 transition"
-            id="lang-es">ES</button>
-    </div>
+    <!-- Global Nav Bar -->
+    <nav class="glass-nav sticky top-0 z-50 px-6 py-4 mb-12 w-full">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/10 overflow-hidden">
+                    <img src="HyBroadcast-ICON.png" alt="Logo" class="w-full h-full object-cover">
+                </div>
+                <span class="font-extrabold text-xl tracking-tight text-white">HyBroadcaster <span
+                        class="text-cyan-400">Suite</span></span>
+            </div>
+
+            <div class="flex items-center gap-2 bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800">
+                <a href="index.html" class="nav-item px-4 py-2 rounded-xl text-xs font-bold hover:text-white transition"
+                    id="nav-gen">Generator</a>
+                <a href="config-editor.html"
+                    class="nav-item px-4 py-2 rounded-xl text-xs font-bold hover:text-white transition"
+                    id="nav-config">Global Config</a>
+                <a href="wiki.html" class="nav-item nav-active px-4 py-2 rounded-xl text-xs font-bold transition"
+                    id="nav-wiki">Wiki</a>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="flex gap-1 bg-slate-900 border border-slate-700 p-1 rounded-lg">
+                    <button onclick="setLanguage('en')"
+                        class="px-2 py-1 rounded text-[10px] font-bold transition hover:bg-slate-800"
+                        id="lang-en">EN</button>
+                    <button onclick="setLanguage('es')"
+                        class="px-2 py-1 rounded text-[10px] font-bold transition hover:bg-slate-800"
+                        id="lang-es">ES</button>
+                </div>
+            </div>
+        </div>
+    </nav>
 
     <!-- Header -->
-    <div class="max-w-4xl w-full text-center mb-12">
+    <div class="max-w-4xl w-full text-center mb-12 px-6">
         <h1 class="text-4xl font-extrabold text-white mb-2" id="wiki-title">Configuration Guide</h1>
-        <p class="text-cyan-400 text-sm font-bold tracking-widest uppercase">HyBroadcaster 1.4.0</p>
+        <p class="text-cyan-400 text-sm font-bold tracking-widest uppercase">HyBroadcaster 2.0.0</p>
     </div>
 
     <!-- Main Content -->
@@ -55,13 +168,85 @@
         <!-- Introduction -->
         <div class="card rounded-[2rem] p-8 md:p-10 shadow-xl">
             <h2 class="text-2xl font-bold text-white mb-4" id="intro-title">How to Configure</h2>
-            <p class="text-slate-400 leading-relaxed mb-6" id="intro-text">
-                HyBroadcaster version 1.4.0 supports two ways to schedule messages. Choose the one that fits your needs.
+            <p class="text-slate-400 leading-relaxed" id="intro-text">
+                HyBroadcaster version 2.0.0-beta supports two ways to schedule messages. Choose the one that fits your
+                needs.
             </p>
         </div>
 
+        <!-- Global Configuration -->
+        <h2 class="text-2xl font-bold text-white px-4 border-l-4 border-cyan-500 pl-4 mt-8">1. Global Configuration</h2>
+        <div class="card rounded-[2rem] p-8 shadow-lg">
+            <p class="text-slate-400 text-sm mb-6" id="global-desc">
+                These settings affect the entire plugin behavior. You can find them at the root of
+                <code>config.json</code>.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div
+                        class="flex items-center justify-between bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+                        <span class="text-xs font-bold text-white">enableLagProtection</span>
+                        <span
+                            class="bg-green-500/20 text-green-400 text-[10px] px-2 py-1 rounded-md font-bold">TRUE</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 pl-2 mt-[-10px]">Prevents message storms after server lag.</p>
+
+                    <div
+                        class="flex items-center justify-between bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+                        <span class="text-xs font-bold text-white">showTimestamp</span>
+                        <span
+                            class="bg-slate-700 text-slate-400 text-[10px] px-2 py-1 rounded-md font-bold">FALSE</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 pl-2 mt-[-10px]">Adds [HH:mm] prefix to all messages.</p>
+                </div>
+                <div class="space-y-4">
+                    <div
+                        class="flex items-center justify-between bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+                        <span class="text-xs font-bold text-white">useUtc</span>
+                        <span
+                            class="bg-slate-700 text-slate-400 text-[10px] px-2 py-1 rounded-md font-bold">FALSE</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 pl-2 mt-[-10px]">Use UTC time instead of local server time.</p>
+
+                    <div
+                        class="flex items-center justify-between bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+                        <span class="text-xs font-bold text-white">enableScheduledMessages</span>
+                        <span
+                            class="bg-green-500/20 text-green-400 text-[10px] px-2 py-1 rounded-md font-bold">TRUE</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 pl-2 mt-[-10px]">Turn the automatic announcer ON or OFF.</p>
+
+                    <div
+                        class="flex items-center justify-between bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+                        <span class="text-xs font-bold text-white">debugMode</span>
+                        <span
+                            class="bg-slate-700 text-slate-400 text-[10px] px-2 py-1 rounded-md font-bold">FALSE</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 pl-2 mt-[-10px]">Show detailed logs in console for
+                        troubleshooting.</p>
+
+                    <div
+                        class="flex items-center justify-between bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+                        <span class="text-cyan-400 text-[10px] font-mono">toastPrefix</span>
+                        <span class="text-cyan-400 text-[10px] font-mono">[ANNOUNCEMENT] </span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 pl-2 mt-[-10px]">Custom prefix for Toast/Emblem notifications.
+                    </p>
+                </div>
+            </div>
+            <div class="mt-6 code-block p-4 rounded-xl font-mono text-xs overflow-x-auto">
+                <pre>{
+  "simpleMode": true,
+  "showTimestamp": true,
+  "toastPrefix": "&b&l[ANNOUNCEMENT] ",
+  "enableLagProtection": true,
+  "scheduledMessages": [...]
+}</pre>
+            </div>
+        </div>
+
         <!-- Configuration Modes -->
-        <h2 class="text-2xl font-bold text-white px-4 border-l-4 border-cyan-500 pl-4">1. Scheduling Methods</h2>
+        <h2 class="text-2xl font-bold text-white px-4 border-l-4 border-cyan-500 pl-4 mt-8">2. Scheduling Methods</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Simple Mode -->
             <div class="card rounded-[2rem] p-8 shadow-lg border-cyan-500/30">
@@ -109,7 +294,7 @@
         </div>
 
         <!-- Message Types -->
-        <h2 class="text-2xl font-bold text-white px-4 border-l-4 border-cyan-500 pl-4 mt-8">2. Message Types</h2>
+        <h2 class="text-2xl font-bold text-white px-4 border-l-4 border-cyan-500 pl-4 mt-8">3. Message Types</h2>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Toast -->
@@ -144,6 +329,148 @@
             </div>
         </div>
 
+        <!-- Sounds -->
+        <h2 class="text-2xl font-bold text-white px-4 border-l-4 border-cyan-500 pl-4 mt-8">4. Sound System</h2>
+        <div class="card rounded-[2rem] p-8 shadow-lg">
+            <p class="text-slate-400 text-sm mb-6" id="sound-desc">
+                Play an audible alert with your message. Use vanilla SFX or custom sounds.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h4 class="text-cyan-400 font-bold mb-3 text-sm uppercase tracking-widest">Recommended Sounds</h4>
+                    <ul class="space-y-2 text-sm text-slate-300">
+                        <li><span class="highlight">SFX_Avatar_Powers_Enable_Local</span> - Celestial tone (Best)</li>
+                        <li><span class="highlight">SFX_Discovery_Z1_Medium</span> - Soft discovery</li>
+                        <li><span class="highlight">SFX_Memories_Unlock_Local</span> - Epic achievement</li>
+                        <li><span class="highlight">SFX_Discovery_Z1_Short</span> - Village arrival tone</li>
+                    </ul>
+                    <div class="mt-6">
+                        <a href="https://hytalemodding.dev/en/docs/server/sounds" target="_blank"
+                            class="text-cyan-500 hover:text-cyan-400 text-xs font-bold underline">
+                            View all Hytale sounds →
+                        </a>
+                    </div>
+                </div>
+                <div class="code-block p-4 rounded-xl font-mono text-xs overflow-x-auto">
+                    <pre>{
+  "schedule": "10m",
+  "message": "Visit our store!",
+  <span class="highlight">"sound": "SFX_Avatar_Powers_Enable_Local"</span>
+}</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Default Config -->
+        <h2 class="text-2xl font-bold text-white px-4 border-l-4 border-cyan-500 pl-4 mt-8" id="full-config-title">5.
+            Default config.json</h2>
+        <div class="card rounded-[2rem] p-8 shadow-lg">
+            <details class="group">
+                <summary class="flex items-center justify-between cursor-pointer list-none">
+                    <p class="text-slate-400 text-sm" id="full-config-desc">
+                        Below is the complete official configuration file for HyBroadcaster. Click to expand.
+                    </p>
+                    <span class="text-cyan-400 font-bold group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <div
+                    class="mt-8 code-block p-6 rounded-2xl font-mono text-[10px] sm:text-xs overflow-x-auto leading-relaxed h-[400px]">
+                    <pre>{
+  "pluginName": "HyBroadcaster",
+  "version": "2.0.0",
+  "debugMode": false,
+  "simpleMode": false,
+  "enableLagProtection": true,
+  "enableScheduledMessages": true,
+  "useUtc": false,
+  "toastPrefix": "[ANNOUNCEMENT] ",
+  "showTimestamp": false,
+  "scheduledMessages": [
+    {
+      "schedule": "*/30 * * * *",
+      "isToast": true,
+      "title": "WELCOME",
+      "message": "Welcome to the server! Visit our website for exclusive news.",
+      "sound": "SFX_Avatar_Powers_Enable_Local"
+    },
+    {
+      "schedule": "0 */2 * * *",
+      "isToast": true,
+      "title": "SERVER TIP",
+      "message": "Did you know? You can use /help to see all available commands.",
+      "sound": "SFX_Discovery_Z1_Short"
+    },
+    {
+      "schedule": "0 12 * * *",
+      "isToast": true,
+      "title": "VOTE",
+      "message": "Support the server by voting! You will get exclusive rewards."
+    },
+    {
+      "schedule": "0 * * * *",
+      "isToast": true,
+      "title": "",
+      "message": "Remember to follow the server rules: be respectful and have fun."
+    },
+    {
+      "schedule": "0 18 * * 5",
+      "isToast": false,
+      "title": "DISCORD",
+      "message": "Join our official Discord community for giveaways and events!"
+    }
+  ]
+}</pre>
+                </div>
+            </details>
+        </div>
+
+        <!-- Manual Commands -->
+        <h2 class="text-2xl font-bold text-white px-4 border-l-4 border-cyan-500 pl-4 mt-8">6. Manual Commands</h2>
+        <div class="card rounded-[2rem] p-8 shadow-lg">
+            <p class="text-slate-400 text-sm mb-8" id="manual-desc">
+                Send manual announcements to all players using these administrative commands.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Announce -->
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-name">/announce &lt;message&gt;</span>
+                        <span class="command-permission">hybroadcaster.admin</span>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed">Displays an announcement in the center of the
+                        screen for all players.</p>
+                    <div class="command-usage">
+                        <code>/announce Hello everyone!</code><br>
+                        <code>/announce Attention! --sound SFX_Avatar_Powers_Enable_Local</code>
+                    </div>
+                    <div class="command-tip">
+                        <strong>Tip:</strong> For the sound to work correctly, place the flag <code>--sound</code> at
+                        the end of the message.
+                    </div>
+                </div>
+                <!-- Announce Toast -->
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-name">/announce toast &lt;message&gt;</span>
+                        <span class="command-permission">hybroadcaster.admin</span>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed">Sends a "Toast" type notification (chat with
+                        prefix) to all players.</p>
+                    <div class="command-usage">
+                        <code>/announce toast Maintenance in 5 min</code><br>
+                        <code>/announce toast Bonus active --sound SFX_Memories_Unlock_Local</code>
+                    </div>
+                    <div class="command-tip">
+                        <strong>Tip:</strong> For the sound to work correctly, place the flag <code>--sound</code> at
+                        the end of the message.
+                    </div>
+                </div>
+            </div>
+            <div
+                class="mt-8 p-4 bg-cyan-500/10 rounded-2xl border border-cyan-500/20 text-[0.65rem] text-cyan-300 text-center uppercase tracking-widest font-bold">
+                Commands are thread-safe and use Hytale's world.execute() system
+            </div>
+        </div>
+
         <div class="text-center mt-12">
             <a href="index.html"
                 class="inline-block bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 px-8 rounded-xl transition">
@@ -158,28 +485,41 @@
             en: {
                 title: "Configuration Guide",
                 intro_title: "How to Configure",
-                intro_text: "HyBroadcaster version 1.4.0 supports two ways to schedule messages. Choose the one that fits your needs.",
+                intro_text: "HyBroadcaster version 2.0.0 supports two ways to schedule messages. Choose the one that fits your needs.",
                 simple_desc: "Use simple durations like \"10s\", \"5m\", \"1h\". Enable this in your config first.",
                 cron_desc: "Use standard Cron expressions for precise scheduling (e.g., specific days or hours).",
                 toast_title: "Toast (Emblem)",
                 toast_desc: "Appears as a notification at the top of the screen.",
                 title_title: "Title (Center Screen)",
-                title_desc: "Appears in the center of the screen with a big title."
+                title_desc: "Appears in the center of the screen with a big title.",
+                sound_desc: "Play an audible alert with your message. Use vanilla SFX or custom sounds.",
+                global_desc: "These settings affect the entire plugin behavior. You can find them at the root of config.json.",
+                full_config_title: "5. Default config.json",
+                full_config_desc: "Below is the complete official configuration file for HyBroadcaster. Click to expand.",
+                manual_desc: "Send manual announcements to all players using these commands.",
+                nav_gen: "Generator", nav_config: "Global Config", nav_wiki: "Wiki"
             },
             es: {
                 title: "Guía de Configuración",
                 intro_title: "Cómo Configurar",
-                intro_text: "HyBroadcaster versión 1.4.0 soporta dos formas de programar mensajes. Elige la que más te convenga.",
+                intro_text: "HyBroadcaster versión 2.0.0 soporta dos formas de programar mensajes. Elige la que más te convenga.",
                 simple_desc: "Usa duraciones simples como \"10s\", \"5m\", \"1h\". Activa esto en tu config primero.",
                 cron_desc: "Usa expresiones Cron estándar para programación precisa (ej: días u horas específicas).",
                 toast_title: "Toast (Emblema)",
                 toast_desc: "Aparece como una notificación en la parte superior de la pantalla.",
                 title_title: "Título (Centro)",
-                title_desc: "Aparece en el centro de la pantalla con un título grande."
+                title_desc: "Aparece en el centro de la pantalla con un título grande.",
+                sound_desc: "Reproduce una alerta sonora con tu mensaje. Usa SFX originales o sonidos personalizados.",
+                global_desc: "Estos ajustes afectan al comportamiento general del plugin. Se encuentran en la raíz del config.json.",
+                full_config_title: "5. config.json por Defecto",
+                full_config_desc: "Debajo se encuentra el archivo de configuración oficial completo de HyBroadcaster. Haz clic para expandir.",
+                manual_desc: "Envía anuncios manuales a todos los jugadores usando estos comandos.",
+                nav_gen: "Generador", nav_config: "Config Global", nav_wiki: "Wiki"
             }
         };
 
         function setLanguage(lang) {
+            localStorage.setItem('lang', lang);
             const t = i18n[lang];
             document.getElementById('wiki-title').innerText = t.title;
             document.getElementById('intro-title').innerText = t.intro_title;
@@ -190,7 +530,19 @@
             document.getElementById('toast-desc').innerText = t.toast_desc;
             document.getElementById('title-title').innerText = t.title_title;
             document.getElementById('title-desc').innerText = t.title_desc;
+            document.getElementById('sound-desc').innerText = t.sound_desc;
+            document.getElementById('global-desc').innerText = t.global_desc;
+            document.getElementById('full-config-title').innerText = t.full_config_title;
+            document.getElementById('full-config-desc').innerText = t.full_config_desc;
+            document.getElementById('manual-desc').innerText = t.manual_desc;
+            document.getElementById('nav-gen').innerText = t.nav_gen;
+            document.getElementById('nav-config').innerText = t.nav_config;
+            document.getElementById('nav-wiki').innerText = t.nav_wiki;
         }
+
+        // Initialize with persistence
+        const savedLang = localStorage.getItem('lang') || 'en';
+        setLanguage(savedLang);
     </script>
 
 </body>

@@ -1,6 +1,6 @@
 {
   "pluginName": "HyBroadcaster",
-  "version": "1.4.1",
+  "version": "2.0.0",
   "debugMode": false,
   "simpleMode": false,
   "enableLagProtection": true,
@@ -12,26 +12,34 @@
     {
       "schedule": "*/30 * * * *",
       "isToast": true,
-      "title": "",
-      "message": "Welcome to our server! Visit our website for more information."
+      "title": "WELCOME",
+      "message": "Welcome to the server! Visit our website for exclusive news.",
+      "sound": "SFX_Avatar_Powers_Enable_Local"
     },
     {
-      "schedule": "0 12 * * 1-5",
-      "isToast": false,
-      "title": "DAILY TOURNAMENT",
-      "message": "The daily tournament starts in 10 minutes. Sign up now!"
+      "schedule": "0 */2 * * *",
+      "isToast": true,
+      "title": "SERVER TIP",
+      "message": "Did you know? You can use /help to see all available commands.",
+      "sound": "SFX_Discovery_Z1_Short"
+    },
+    {
+      "schedule": "0 12 * * *",
+      "isToast": true,
+      "title": "VOTE",
+      "message": "Support the server by voting! You will get exclusive rewards."
     },
     {
       "schedule": "0 * * * *",
       "isToast": true,
       "title": "",
-      "message": "Remember: Use /help to see all available commands."
+      "message": "Remember to follow the server rules: be respectful and have fun."
     },
     {
-      "schedule": "0 18 * * 0,6",
+      "schedule": "0 18 * * 5",
       "isToast": false,
-      "title": "SPECIAL EVENT",
-      "message": "Weekend special event! Join now to get exclusive rewards."
+      "title": "DISCORD",
+      "message": "Join our official Discord community for giveaways and events!"
     }
   ]
 }

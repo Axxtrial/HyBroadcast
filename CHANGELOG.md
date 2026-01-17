@@ -1,19 +1,44 @@
-### Version 1.4.1
-* **Fixed:** **Strict Lag Protection**. The scheduler now enforces a strict minimum delay (1s) between messages to prevent overlapping. Controlled via `"enableLagProtection"` (default: `true`).
-* **New:** **Timestamps**. Added `"showTimestamp": true` option to `config.json` to prefix messages with `[HH:mm]`.
-* **Improved:** Updated to latest stable build.
+# Changelog
 
-### Version 1.4.0
-* **New:** Added **Simple Mode**. You can now use simple durations (e.g., `"10s"`, `"5m"`, `"1h"`) in `config.json` instead of complex Cron expressions. Enable it by setting `"simpleMode": true`.
-* **Fixed:** Implemented **Lag Protection**. The scheduler now uses recursive delays, ensuring that if the server lags or freezes, messages do not accumulate and spam the chat upon recovery.
-* **Fixed:** Improved error logging. Invalid duration formats now show a friendly warning instead of a full stack trace.
-* **Internal:** Dependency updates and code cleanup.
+## [2.0.0] - 2026-01-17
+### Added
+- **Sound System Support**: Added `--sound <name>` flag to manual commands and `sound` field in `config.json`.
+- **Hytale Native Argument System**: Refactored commands to leverage Hytale's native parser for flags.
+- **Improved Thread-Safety**: All broadcasts and sound playbacks now use `world.execute()` for maximum stability and thread-independence.
+- **Smart Lag Protection**: Schedulers now intelligently skip missed intervals during heavy server lag to prevent "message storms".
+- **Enhanced Wiki**: Added interactive visual guide and responsive command documentation.
 
-### Version 1.3.3
-* **Fixed:** Definitive fix for message duplication bug. Implemented a volatile `active` state flag to rigorously eliminate "zombie" tasks that survived reloads due to race conditions (lag).
+### Fixed
+- **Greedy Parser Conflict**: Resolved critical engine-level parsing error where multi-word messages conflicted with optional flags.
+- **Semver Compliance**: Fixed version string to `2.0.0` to satisfy Hytale's alphanumeric requirements.
+- **Clickable Links**: Detection and registration of URLs in broadcast messages.
 
-### Version 1.3.2
-* **New:** Added support for clickable links (`http`/`https`) in broadcast messages. Now URLs are automatically detected and made clickable.
-* **Fixed:** Critical bug where broadcast messages were duplicated after using `/hyannounces reload` (Zombie Schedulers).
-* **Fixed:** Potential server crash when reloading the plugin if scheduled messages were previously disabled.
-* **Improved:** Internal scheduler lifecycle management is now more robust.
+---
+
+## [1.6.0]
+### Added
+- **Architecture Overhaul**: Complete rewrite of the scheduling engine for Total Thread Independence.
+- **Rigid No-Drift Timing**: Mathematical target-time calculation ensures perfect rhythm regardless of server TPS.
+- **Async Broadcasting**: All broadcasts moved to `CompletableFuture` to prevent main-thread blockage.
+
+---
+
+## [1.5.0]
+### Added
+- **Anti-Flood System**: Minimum gap of 1.5 seconds enforced between any two announcements.
+- **Startup Auto-Correction**: Automatic staggering of messages scheduled for the same second.
+
+---
+
+## [1.4.2]
+### Fixed
+- **Zombie Schedulers**: Optimized shutdown logic to prevent task duplication during rapid reloads.
+- **Volatile State Flag**: Added rigorous task tracking to ensure only one active loop exists per instance.
+
+---
+
+## [1.4.1]
+### Added
+- **Simple Mode**: Support for human-readable durations like `10s`, `5m`, `1h`.
+- **Timestamps**: Optional `showTimestamp` flag to prefix messages with `[HH:mm]`.
+- **Lag Protection**: Recursive delay logic to prevent message accumulation.

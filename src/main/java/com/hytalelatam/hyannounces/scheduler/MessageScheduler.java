@@ -7,6 +7,7 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.util.EventTitleUtil;
 import com.hytalelatam.hyannounces.util.ColorUtil;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -20,7 +21,12 @@ public class MessageScheduler {
     private ScheduledExecutorService executor;
     private final List<ScheduledFuture<?>> scheduledTasks;
     private volatile boolean active = true;
+
     private final String schedulerId;
+
+    // Anti-Flood: Global State to prevent message bursts
+    private static final Object LOCK = new Object();
+    private static volatile long lastBroadcastTime = 0;
 
     public MessageScheduler(HyAnnouncesPlugin plugin) {
         this.plugin = plugin;
@@ -29,246 +35,208 @@ public class MessageScheduler {
         this.schedulerId = java.util.UUID.randomUUID().toString().substring(0, 8);
     }
 
-    /**
-     * Starts scheduling all configured messages.
-     */
     public void start(List<ScheduledMessage> messages) {
         plugin.getLogger().atInfo()
                 .log("[ID: " + schedulerId + "] Starting message scheduler with " + messages.size() + " messages");
 
+        java.util.Map<String, Integer> scheduleFrequency = new java.util.HashMap<>();
+
         for (ScheduledMessage msg : messages) {
             try {
-                scheduleMessage(msg);
-            } catch (IllegalArgumentException e) {
-                plugin.getLogger().atWarning().log(
-                        "[ID: " + schedulerId + "] Skipped message: " + e.getMessage()
-                                + ". (Did you enable simpleMode but leave Cron expressions?)");
+                String schedule = msg.getSchedule();
+                int collisionCount = scheduleFrequency.getOrDefault(schedule, 0);
+                scheduleFrequency.put(schedule, collisionCount + 1);
+
+                long collisionOffset = collisionCount * 2000L;
+
+                if (collisionCount > 0) {
+                    plugin.getLogger().atWarning().log(
+                            "[ID: " + schedulerId + "] Auto-Correction: Collision for '" + schedule + "'. Offset: "
+                                    + (collisionOffset / 1000) + "s");
+                }
+
+                scheduleMessage(msg, collisionOffset);
             } catch (Exception e) {
-                plugin.getLogger().atSevere().log(
-                        "[ID: " + schedulerId + "] Failed to schedule message with schedule '" + msg.getSchedule()
-                                + "': "
-                                + e.getMessage());
-                e.printStackTrace();
+                plugin.getLogger().atSevere().log("[ID: " + schedulerId + "] Error scheduling: " + e.getMessage());
             }
         }
     }
 
-    /**
-     * Schedules a single message based on its configuration.
-     */
-    private void scheduleMessage(ScheduledMessage msg) {
-        // Capture the current executor instance to avoid rescheduling on a new one
-        // after reload
+    private void scheduleMessage(ScheduledMessage msg, long additionalOffset) {
         final ScheduledExecutorService currentExecutor = this.executor;
-
         boolean simpleMode = plugin.getConfigManager().getConfig().isSimpleMode();
-        final CronScheduler cron = simpleMode ? null : new CronScheduler(msg.getSchedule());
-        final long simpleDuration = simpleMode ? parseDuration(msg.getSchedule()) : 0;
-
-        // Schedule the recurring task
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                if (!active)
-                    return; // Stop if scheduler is shutdown
-
-                try {
-                    // Broadcast the message
-                    broadcastMessage(msg);
-
-                    // Calculate next execution and reschedule
-                    long delay;
-                    if (simpleMode) {
-                        delay = simpleDuration;
-                    } else {
-                        boolean useUtc = plugin.getConfigManager().getConfig().isUseUtc();
-                        delay = cron.getDelayUntilNext(useUtc);
-                    }
-
-                    if (!active)
-                        return; // double check before rescheduling
-
-                    if (delay < 1000 && plugin.getConfigManager().getConfig().isEnableLagProtection()) {
-                        // Anti-Overlap / Anti-Spam safety
-                        // If delay is extremely small (e.g. catch-up), force at least 1 second wait
-                        delay = 1000;
-                    }
-
-                    // Use the captured executor instance
-                    // If this executor is shutdown (due to reload), this will throw
-                    // RejectedExecutionException
-                    // which stops the loop - exactly what we want.
-                    currentExecutor.schedule(this, delay, TimeUnit.MILLISECONDS);
-
-                    if (plugin.getConfigManager().getConfig().isDebugMode()) {
-                        plugin.getLogger().atInfo().log(
-                                "[ID: " + schedulerId + "] Message scheduled for next execution in " + (delay / 1000)
-                                        + " seconds: "
-                                        + msg.getMessage());
-                    }
-                } catch (RejectedExecutionException e) {
-                    // Executor is shutdown, stop this task gracefully
-                } catch (Exception e) {
-                    plugin.getLogger().atSevere().log(
-                            "[ID: " + schedulerId + "] Error executing scheduled message: " + e.getMessage());
-                    e.printStackTrace();
-                }
-            }
-        };
-
-        // Schedule first execution
         long initialDelay;
         if (simpleMode) {
-            initialDelay = simpleDuration;
+            initialDelay = parseDuration(msg.getSchedule());
         } else {
             boolean useUtc = plugin.getConfigManager().getConfig().isUseUtc();
+            CronScheduler cron = new CronScheduler(msg.getSchedule());
             initialDelay = cron.getDelayUntilNext(useUtc);
         }
-        ScheduledFuture<?> future = currentExecutor.schedule(task, initialDelay, TimeUnit.MILLISECONDS);
-        scheduledTasks.add(future);
 
-        plugin.getLogger().atInfo().log(
-                "[ID: " + schedulerId + "] Scheduled message '"
-                        + msg.getMessage().substring(0, Math.min(30, msg.getMessage().length())) +
-                        "...' with schedule: " + msg.getSchedule() + " (next in " + (initialDelay / 1000) + "s)");
+        long initialDelayWithOffset = initialDelay + additionalOffset;
+        long firstExpectedTime = System.currentTimeMillis() + initialDelayWithOffset;
+        RecursiveTask task = new RecursiveTask(msg, currentExecutor, firstExpectedTime);
+
+        ScheduledFuture<?> future = currentExecutor.schedule(task, initialDelayWithOffset, TimeUnit.MILLISECONDS);
+        scheduledTasks.add(future);
     }
 
-    /**
-     * Broadcasts a message to all online players.
-     */
+    private class RecursiveTask implements Runnable {
+        private final ScheduledMessage msg;
+        private final ScheduledExecutorService currentExecutor;
+        private final CronScheduler cron;
+        private final long simpleDuration;
+        private final boolean simpleMode;
+        private long expectedExecutionTime;
+
+        public RecursiveTask(ScheduledMessage msg, ScheduledExecutorService executor, long expectedExecutionTime) {
+            this.msg = msg;
+            this.currentExecutor = executor;
+            this.expectedExecutionTime = expectedExecutionTime;
+            this.simpleMode = plugin.getConfigManager().getConfig().isSimpleMode();
+
+            if (simpleMode) {
+                this.simpleDuration = parseDuration(msg.getSchedule());
+                this.cron = null;
+            } else {
+                this.simpleDuration = 0;
+                this.cron = new CronScheduler(msg.getSchedule());
+            }
+        }
+
+        @Override
+        public void run() {
+            if (!active)
+                return;
+            try {
+                long now = System.currentTimeMillis();
+                long interval = getInterval();
+                if (interval <= 0)
+                    interval = 1000;
+
+                while (expectedExecutionTime <= now) {
+                    expectedExecutionTime += interval;
+                }
+
+                // Async Broadcast
+                CompletableFuture.runAsync(() -> broadcastMessage(msg));
+
+                long nextTarget = expectedExecutionTime;
+                if (nextTarget < now)
+                    nextTarget = now;
+
+                long currentInterval = getInterval();
+                if (currentInterval < 1000)
+                    currentInterval = 1000;
+
+                nextTarget += currentInterval;
+                while (nextTarget <= System.currentTimeMillis()) {
+                    nextTarget += currentInterval;
+                }
+
+                this.expectedExecutionTime = nextTarget;
+                long delay = nextTarget - System.currentTimeMillis();
+                if (delay < 0)
+                    delay = 0;
+
+                if (!active)
+                    return;
+                currentExecutor.schedule(this, delay, TimeUnit.MILLISECONDS);
+            } catch (Exception e) {
+                plugin.getLogger().atSevere().log("[ID: " + schedulerId + "] Task error: " + e.getMessage());
+            }
+        }
+
+        private long getInterval() {
+            if (simpleMode)
+                return simpleDuration;
+            boolean useUtc = plugin.getConfigManager().getConfig().isUseUtc();
+            LocalDateTime from = java.time.Instant.ofEpochMilli(expectedExecutionTime)
+                    .atZone(useUtc ? java.time.ZoneOffset.UTC : java.time.ZoneId.systemDefault())
+                    .toLocalDateTime();
+            LocalDateTime next = cron.getNextExecution(from);
+            return next.atZone(useUtc ? java.time.ZoneOffset.UTC : java.time.ZoneId.systemDefault())
+                    .toInstant().toEpochMilli() - expectedExecutionTime;
+        }
+    }
+
     private void broadcastMessage(ScheduledMessage msg) {
+        synchronized (LOCK) {
+            long now = System.currentTimeMillis();
+            long timeSinceLast = now - lastBroadcastTime;
+            if (timeSinceLast < 1500) {
+                try {
+                    Thread.sleep(1500 - timeSinceLast);
+                } catch (InterruptedException e) {
+                    return;
+                }
+            }
+            lastBroadcastTime = System.currentTimeMillis();
+        }
+
         Universe universe = Universe.get();
         int playerCount = universe.getPlayerCount();
-
-        if (playerCount == 0) {
-            if (plugin.getConfigManager().getConfig().isDebugMode()) {
-                plugin.getLogger().atInfo()
-                        .log("[ID: " + schedulerId + "] Skipping scheduled message (no players online)");
-            }
+        if (playerCount == 0)
             return;
-        }
 
         universe.getPlayers().forEach(player -> {
-            if (msg.isToast()) {
-                // Toast notification (action bar message with custom prefix)
-                String prefix = plugin.getConfigManager().getConfig().getToastPrefix();
-                // Timestamp logic
-                if (plugin.getConfigManager().getConfig().isShowTimestamp()) {
-                    String time = java.time.LocalTime.now()
-                            .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
-                    prefix = "[" + time + "] " + prefix;
-                }
-                player.sendMessage(ColorUtil.translate(prefix + msg.getMessage()));
-            } else {
-                // Center screen announcement with custom title
-                World world = universe.getWorld(player.getWorldUuid());
-                if (world != null) {
-                    // Use custom title if provided, otherwise use message as title
-                    String title = (msg.getTitle() != null && !msg.getTitle().isEmpty())
-                            ? msg.getTitle()
-                            : msg.getMessage();
-
-                    // Use message as subtitle if title is custom, otherwise use default
-                    String subtitle = (msg.getTitle() != null && !msg.getTitle().isEmpty())
-                            ? msg.getMessage()
-                            : "Automatic Announcement";
-
-                    // Timestamp logic for Title/Subtitle? Usually not desired on titles, but maybe
-                    // on subtitle?
-                    // User request said "Implement Timestamps in Chat", implies toasts/chat
-                    // messages.
-                    // I will apply it to Subtitle if it acts as the message body.
-                    if (plugin.getConfigManager().getConfig().isShowTimestamp()) {
-                        String time = java.time.LocalTime.now()
-                                .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
-                        subtitle = "[" + time + "] " + subtitle;
+            World world = universe.getWorld(player.getWorldUuid());
+            if (world != null) {
+                world.execute(() -> {
+                    // UI and Sound updates must be inside world.execute for thread safety
+                    if (msg.isToast()) {
+                        String prefix = plugin.getConfigManager().getConfig().getToastPrefix();
+                        if (plugin.getConfigManager().getConfig().isShowTimestamp()) {
+                            prefix = "[" + java.time.LocalTime.now()
+                                    .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")) + "] " + prefix;
+                        }
+                        player.sendMessage(ColorUtil.translate(prefix + msg.getMessage()));
+                    } else {
+                        String title = (msg.getTitle() != null && !msg.getTitle().isEmpty()) ? msg.getTitle()
+                                : msg.getMessage();
+                        String subtitle = (msg.getTitle() != null && !msg.getTitle().isEmpty()) ? msg.getMessage()
+                                : "Automatic Announcement";
+                        if (plugin.getConfigManager().getConfig().isShowTimestamp()) {
+                            subtitle = "[" + java.time.LocalTime.now()
+                                    .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")) + "] " + subtitle;
+                        }
+                        EventTitleUtil.showEventTitleToPlayer(player, ColorUtil.translate(title),
+                                ColorUtil.translate(subtitle), true);
                     }
 
-                    EventTitleUtil.showEventTitleToPlayer(
-                            player,
-                            ColorUtil.translate(title),
-                            ColorUtil.translate(subtitle),
-                            true);
-                }
+                    // Sound playback (v2.0)
+                    if (msg.getSound() != null && !msg.getSound().isEmpty()) {
+                        com.hytalelatam.hyannounces.util.SoundUtil.playSound(player, msg.getSound());
+                    }
+                });
             }
         });
-
-        if (plugin.getConfigManager().getConfig().isDebugMode())
-
-        {
-            plugin.getLogger().atInfo().log(
-                    "[ID: " + schedulerId + "] Broadcasted scheduled message to " + playerCount + " player(s): "
-                            + msg.getMessage());
-        }
     }
 
-    /**
-     * Parses duration strings like "10s", "1m", "1h".
-     */
     private long parseDuration(String durationStr) {
-        if (durationStr == null || durationStr.isEmpty()) {
-            throw new IllegalArgumentException("Duration cannot be empty");
-        }
-
         durationStr = durationStr.toLowerCase().trim();
         long multiplier = 1000;
-
         if (durationStr.endsWith("s")) {
             durationStr = durationStr.substring(0, durationStr.length() - 1);
         } else if (durationStr.endsWith("m")) {
-            multiplier = 60 * 1000;
+            multiplier = 60000;
             durationStr = durationStr.substring(0, durationStr.length() - 1);
         } else if (durationStr.endsWith("h")) {
-            multiplier = 60 * 60 * 1000;
+            multiplier = 3600000;
             durationStr = durationStr.substring(0, durationStr.length() - 1);
         } else if (durationStr.endsWith("d")) {
-            multiplier = 24 * 60 * 60 * 1000;
+            multiplier = 86400000;
             durationStr = durationStr.substring(0, durationStr.length() - 1);
         }
-
-        try {
-            return Long.parseLong(durationStr) * multiplier;
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid duration format: " + durationStr);
-        }
+        return Long.parseLong(durationStr) * multiplier;
     }
 
-    /**
-     * Stops all scheduled tasks and shuts down the executor.
-     */
     public void shutdown() {
-        plugin.getLogger().atInfo().log("Shutting down message scheduler...");
-        active = false; // Disable new task execution
-
-        // Cancel all scheduled tasks
-        for (ScheduledFuture<?> task : scheduledTasks) {
+        active = false;
+        for (ScheduledFuture<?> task : scheduledTasks)
             task.cancel(false);
-        }
         scheduledTasks.clear();
-
-        // Immediate shutdown (no graceful wait)
         executor.shutdownNow();
-
-        plugin.getLogger().atInfo().log("Message scheduler stopped");
-    }
-
-    /**
-     * Restarts the scheduler with new messages.
-     */
-    public void restart(List<ScheduledMessage> messages) {
-        // Shutdown old executor
-        if (executor != null && !executor.isShutdown()) {
-            shutdown();
-        }
-
-        // Reset active flag
-        active = true;
-
-        // Create new executor
-        executor = Executors.newScheduledThreadPool(2);
-        scheduledTasks.clear();
-
-        // Start with new messages
-        start(messages);
     }
 }

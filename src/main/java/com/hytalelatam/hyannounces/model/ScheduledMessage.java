@@ -8,15 +8,17 @@ public class ScheduledMessage {
     private boolean isToast; // Display as toast notification vs center screen
     private String title; // Title for center-screen announcements (optional)
     private String message; // Message content
+    private String sound; // Sound to play (optional)
 
     public ScheduledMessage() {
     }
 
-    public ScheduledMessage(String schedule, boolean isToast, String title, String message) {
+    public ScheduledMessage(String schedule, boolean isToast, String title, String message, String sound) {
         this.schedule = schedule;
         this.isToast = isToast;
         this.title = title;
         this.message = message;
+        this.sound = sound;
     }
 
     public String getSchedule() {
@@ -51,6 +53,14 @@ public class ScheduledMessage {
         this.message = message;
     }
 
+    public String getSound() {
+        return sound;
+    }
+
+    public void setSound(String sound) {
+        this.sound = sound;
+    }
+
     @Override
     public String toString() {
         return "ScheduledMessage{" +
@@ -58,6 +68,7 @@ public class ScheduledMessage {
                 ", isToast=" + isToast +
                 ", title='" + title + '\'' +
                 ", message='" + message + '\'' +
+                ", sound='" + sound + '\'' +
                 '}';
     }
 }
