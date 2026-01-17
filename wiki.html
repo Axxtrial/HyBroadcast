@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyBroadcaster Wiki - Configuration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #0b0f1a;
+        }
+
+        .card {
+            background: #161b2c;
+            border: 1px solid #2d3748;
+        }
+
+        .code-block {
+            background: #0f1320;
+            border-left: 4px solid #22d3ee;
+            color: #d1d5db;
+        }
+
+        .highlight {
+            color: #22d3ee;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body class="text-slate-200 min-h-screen flex flex-col items-center p-4 py-12">
+
+    <div class="fixed top-6 right-6 flex gap-2">
+        <button onclick="setLanguage('en')"
+            class="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-lg text-xs font-bold border border-slate-700 transition"
+            id="lang-en">EN</button>
+        <button onclick="setLanguage('es')"
+            class="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-lg text-xs font-bold border border-slate-700 transition"
+            id="lang-es">ES</button>
+    </div>
+
+    <!-- Header -->
+    <div class="max-w-4xl w-full text-center mb-12">
+        <h1 class="text-4xl font-extrabold text-white mb-2" id="wiki-title">Configuration Guide</h1>
+        <p class="text-cyan-400 text-sm font-bold tracking-widest uppercase">HyBroadcaster 1.4.0</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl w-full space-y-8">
+
+        <!-- Introduction -->
+        <div class="card rounded-[2rem] p-8 md:p-10 shadow-xl">
+            <h2 class="text-2xl font-bold text-white mb-4" id="intro-title">How to Configure</h2>
+            <p class="text-slate-400 leading-relaxed mb-6" id="intro-text">
+                HyBroadcaster version 1.4.0 supports two ways to schedule messages. Choose the one that fits your needs.
+            </p>
+        </div>
+
+        <!-- Configuration Modes -->
+        <h2 class="text-2xl font-bold text-white px-4 border-l-4 border-cyan-500 pl-4">1. Scheduling Methods</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Simple Mode -->
+            <div class="card rounded-[2rem] p-8 shadow-lg border-cyan-500/30">
+                <div class="flex items-center gap-3 mb-4">
+                    <span
+                        class="bg-cyan-500/10 text-cyan-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Option
+                        A</span>
+                    <h3 class="text-xl font-bold text-white">Simple Mode (Recommended)</h3>
+                </div>
+                <p class="text-slate-400 text-sm mb-6 h-12" id="simple-desc">
+                    Use simple durations like "10s", "5m", "1h". Enable this in your config first.
+                </p>
+                <div class="code-block p-4 rounded-xl font-mono text-xs overflow-x-auto">
+                    <pre>"simpleMode": true,
+"scheduledMessages": [
+  {
+    "schedule": <span class="highlight">"10m"</span>, // Every 10 minutes
+    "message": "Hello World!"
+  }
+]</pre>
+                </div>
+            </div>
+
+            <!-- Advanced Mode -->
+            <div class="card rounded-[2rem] p-8 shadow-lg">
+                <div class="flex items-center gap-3 mb-4">
+                    <span
+                        class="bg-slate-700/50 text-slate-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Option
+                        B</span>
+                    <h3 class="text-xl font-bold text-white">Cron Mode (Advanced)</h3>
+                </div>
+                <p class="text-slate-400 text-sm mb-6 h-12" id="cron-desc">
+                    Use standard Cron expressions for precise scheduling (e.g., specific days or hours).
+                </p>
+                <div class="code-block p-4 rounded-xl font-mono text-xs overflow-x-auto">
+                    <pre>"simpleMode": false,
+"scheduledMessages": [
+  {
+    "schedule": <span class="highlight">"0 18 * * 5"</span>, // Fridays at 18:00
+    "message": "It's Friday!"
+  }
+]</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Types -->
+        <h2 class="text-2xl font-bold text-white px-4 border-l-4 border-cyan-500 pl-4 mt-8">2. Message Types</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Toast -->
+            <div class="card rounded-[2rem] p-8 shadow-lg">
+                <h3 class="text-xl font-bold text-white mb-2" id="toast-title">Toast (Emblem)</h3>
+                <p class="text-slate-400 text-sm mb-4" id="toast-desc">
+                    Appears as a notification at the top of the screen.
+                </p>
+                <div class="code-block p-4 rounded-xl font-mono text-xs overflow-x-auto">
+                    <pre>{
+  "schedule": "5m",
+  <span class="highlight">"isToast": true,</span>
+  "message": "This is a toast!"
+}</pre>
+                </div>
+            </div>
+
+            <!-- Title -->
+            <div class="card rounded-[2rem] p-8 shadow-lg">
+                <h3 class="text-xl font-bold text-white mb-2" id="title-title">Title (Center Screen)</h3>
+                <p class="text-slate-400 text-sm mb-4" id="title-desc">
+                    Appears in the center of the screen with a big title.
+                </p>
+                <div class="code-block p-4 rounded-xl font-mono text-xs overflow-x-auto">
+                    <pre>{
+  "schedule": "30m",
+  <span class="highlight">"isToast": false,</span>
+  <span class="highlight">"title": "&bHello",</span>
+  "message": "&7Welcome!"
+}</pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-12">
+            <a href="index.html"
+                class="inline-block bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 px-8 rounded-xl transition">
+                ← Back to Editor
+            </a>
+        </div>
+
+    </div>
+
+    <script>
+        const i18n = {
+            en: {
+                title: "Configuration Guide",
+                intro_title: "How to Configure",
+                intro_text: "HyBroadcaster version 1.4.0 supports two ways to schedule messages. Choose the one that fits your needs.",
+                simple_desc: "Use simple durations like \"10s\", \"5m\", \"1h\". Enable this in your config first.",
+                cron_desc: "Use standard Cron expressions for precise scheduling (e.g., specific days or hours).",
+                toast_title: "Toast (Emblem)",
+                toast_desc: "Appears as a notification at the top of the screen.",
+                title_title: "Title (Center Screen)",
+                title_desc: "Appears in the center of the screen with a big title."
+            },
+            es: {
+                title: "Guía de Configuración",
+                intro_title: "Cómo Configurar",
+                intro_text: "HyBroadcaster versión 1.4.0 soporta dos formas de programar mensajes. Elige la que más te convenga.",
+                simple_desc: "Usa duraciones simples como \"10s\", \"5m\", \"1h\". Activa esto en tu config primero.",
+                cron_desc: "Usa expresiones Cron estándar para programación precisa (ej: días u horas específicas).",
+                toast_title: "Toast (Emblema)",
+                toast_desc: "Aparece como una notificación en la parte superior de la pantalla.",
+                title_title: "Título (Centro)",
+                title_desc: "Aparece en el centro de la pantalla con un título grande."
+            }
+        };
+
+        function setLanguage(lang) {
+            const t = i18n[lang];
+            document.getElementById('wiki-title').innerText = t.title;
+            document.getElementById('intro-title').innerText = t.intro_title;
+            document.getElementById('intro-text').innerText = t.intro_text;
+            document.getElementById('simple-desc').innerText = t.simple_desc;
+            document.getElementById('cron-desc').innerText = t.cron_desc;
+            document.getElementById('toast-title').innerText = t.toast_title;
+            document.getElementById('toast-desc').innerText = t.toast_desc;
+            document.getElementById('title-title').innerText = t.title_title;
+            document.getElementById('title-desc').innerText = t.title_desc;
+        }
+    </script>
+
+</body>
+
+</html>

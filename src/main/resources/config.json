@@ -1,7 +1,8 @@
 {
   "pluginName": "HyBroadcaster",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "debugMode": false,
+  "simpleMode": false,
   "enableScheduledMessages": true,
   "useUtc": false,
   "toastPrefix": "[ANNOUNCEMENT] ",

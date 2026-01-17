@@ -1,3 +1,9 @@
+### Version 1.4.0
+* **New:** Added **Simple Mode**. You can now use simple durations (e.g., `"10s"`, `"5m"`, `"1h"`) in `config.json` instead of complex Cron expressions. Enable it by setting `"simpleMode": true`.
+* **Fixed:** Implemented **Lag Protection**. The scheduler now uses recursive delays, ensuring that if the server lags or freezes, messages do not accumulate and spam the chat upon recovery.
+* **Fixed:** Improved error logging. Invalid duration formats now show a friendly warning instead of a full stack trace.
+* **Internal:** Dependency updates and code cleanup.
+
 ### Version 1.3.3
 * **Fixed:** Definitive fix for message duplication bug. Implemented a volatile `active` state flag to rigorously eliminate "zombie" tasks that survived reloads due to race conditions (lag).
 

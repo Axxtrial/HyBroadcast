@@ -96,6 +96,10 @@
         <button onclick="setLanguage('es')"
             class="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-lg text-xs font-bold border border-slate-700 transition"
             id="lang-es">ES</button>
+        <a href="wiki.html"
+            class="bg-cyan-900/50 hover:bg-cyan-900/70 text-cyan-400 px-3 py-1 rounded-lg text-xs font-bold border border-cyan-800 transition flex items-center gap-1">
+            <span>📚</span> Wiki
+        </a>
     </div>
 
     <div class="max-w-3xl w-full card rounded-[2.5rem] shadow-2xl p-8 md:p-12">
@@ -114,45 +118,87 @@
             </div>
         </div>
 
-        <div class="flex border-b border-slate-700 mb-8 gap-8 text-slate-500">
-            <button onclick="switchTab('simple')" id="btn-simple"
-                class="tab-btn pb-4 text-xs font-black uppercase tracking-widest tab-active">Time Settings</button>
-            <button onclick="switchTab('weekly')" id="btn-weekly"
-                class="tab-btn pb-4 text-xs font-black uppercase tracking-widest">Days</button>
+        <!-- Mode Switcher -->
+        <div class="flex items-center justify-between bg-slate-900/50 p-4 rounded-2xl border border-slate-700 mb-8">
+            <div>
+                <p class="text-sm font-bold text-white" id="txt-simple-mode">Use Simple Mode?</p>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tighter" id="txt-simple-desc">
+                    Easy durations vs Advanced Cron.</p>
+            </div>
+            <label class="flex items-center cursor-pointer">
+                <div class="relative">
+                    <input type="checkbox" id="simple-mode-check" class="sr-only" onchange="toggleMode()">
+                    <div class="block bg-slate-800 w-14 h-8 rounded-full border border-slate-600"></div>
+                    <div
+                        class="toggle-dot absolute left-1 top-1 bg-slate-400 w-6 h-6 rounded-full transition shadow-sm">
+                    </div>
+                </div>
+            </label>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div class="space-y-2">
-                <div class="flex justify-between items-center px-1">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
-                        id="label-min">Minute</label>
-                    <label class="flex items-center gap-2 cursor-pointer group">
-                        <span class="text-[10px] font-bold text-slate-500 group-hover:text-cyan-400 transition"
-                            id="txt-every-m">Every?</span>
-                        <input type="checkbox" id="check-m" onchange="genCron()" class="custom-checkbox">
-                    </label>
-                </div>
-                <input type="text" id="cron-m" value="0" oninput="genCron()"
-                    class="input-field w-full rounded-xl px-4 py-3 font-mono">
+        <!-- Start Cron Editor -->
+        <div id="cron-editor">
+            <div class="flex border-b border-slate-700 mb-8 gap-8 text-slate-500">
+                <button onclick="switchTab('simple')" id="btn-simple"
+                    class="tab-btn pb-4 text-xs font-black uppercase tracking-widest tab-active">Time Settings</button>
+                <button onclick="switchTab('weekly')" id="btn-weekly"
+                    class="tab-btn pb-4 text-xs font-black uppercase tracking-widest">Days</button>
             </div>
-            <div class="space-y-2">
-                <div class="flex justify-between items-center px-1">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
-                        id="label-hour">Hour</label>
-                    <label class="flex items-center gap-2 cursor-pointer group">
-                        <span class="text-[10px] font-bold text-slate-500 group-hover:text-cyan-400 transition"
-                            id="txt-every-h-check">Every?</span>
-                        <input type="checkbox" id="check-h" onchange="genCron()" class="custom-checkbox">
-                    </label>
-                </div>
-                <input type="text" id="cron-h" value="*" oninput="genCron()"
-                    class="input-field w-full rounded-xl px-4 py-3 font-mono">
-            </div>
-        </div>
 
-        <div id="panel-weekly" class="hidden bg-slate-900/50 p-6 rounded-2xl border border-slate-700 mb-8">
-            <div class="flex flex-wrap gap-2" id="day-container"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center px-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                            id="label-min">Minute</label>
+                        <label class="flex items-center gap-2 cursor-pointer group">
+                            <span class="text-[10px] font-bold text-slate-500 group-hover:text-cyan-400 transition"
+                                id="txt-every-m">Every?</span>
+                            <input type="checkbox" id="check-m" onchange="genCron()" class="custom-checkbox">
+                        </label>
+                    </div>
+                    <input type="text" id="cron-m" value="0" oninput="genCron()"
+                        class="input-field w-full rounded-xl px-4 py-3 font-mono">
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center px-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                            id="label-hour">Hour</label>
+                        <label class="flex items-center gap-2 cursor-pointer group">
+                            <span class="text-[10px] font-bold text-slate-500 group-hover:text-cyan-400 transition"
+                                id="txt-every-h-check">Every?</span>
+                            <input type="checkbox" id="check-h" onchange="genCron()" class="custom-checkbox">
+                        </label>
+                    </div>
+                    <input type="text" id="cron-h" value="*" oninput="genCron()"
+                        class="input-field w-full rounded-xl px-4 py-3 font-mono">
+                </div>
+            </div>
+
+            <div id="panel-weekly" class="hidden bg-slate-900/50 p-6 rounded-2xl border border-slate-700 mb-8">
+                <div class="flex flex-wrap gap-2" id="day-container"></div>
+            </div>
         </div>
+        <!-- End Cron Editor -->
+
+        <!-- Start Simple Editor -->
+        <div id="simple-editor" class="hidden mb-8">
+            <div class="space-y-2">
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest"
+                    id="label-duration">Duration</label>
+                <div class="flex gap-2">
+                    <input type="number" id="simple-val" value="10" oninput="genCron()"
+                        class="input-field w-24 rounded-xl px-4 py-3 font-mono text-center">
+                    <select id="simple-unit" onchange="genCron()"
+                        class="input-field flex-1 rounded-xl px-4 py-3 font-bold bg-slate-900">
+                        <option value="s">Seconds (s)</option>
+                        <option value="m">Minutes (m)</option>
+                        <option value="h">Hours (h)</option>
+                    </select>
+                </div>
+                <p class="text-[10px] text-slate-500 italic" id="simple-hint">e.g., 10s = Every 10 seconds.</p>
+            </div>
+        </div>
+        <!-- End Simple Editor -->
 
         <div class="space-y-6 bg-slate-900/30 p-6 rounded-3xl border border-slate-700 mb-8">
             <div class="space-y-2">
@@ -220,14 +266,18 @@
                 label_min: "Minute", label_hour: "Hour", label_msg: "Message Content", label_title: "Title (Optional)",
                 every: "Every?", copy: "Copy Object", copied: "COPIED!", label_preview: "Live Preview",
                 toast: "Display as Emblem (Toast)?", toast_desc: "Big screen notification vs small chat text.",
-                days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], msg_pre: "Will run "
+                days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], msg_pre: "Will run ",
+                simple_mode: "Use Simple Mode?", simple_desc: "Easy durations vs Advanced Cron.",
+                label_duration: "Duration", simple_hint: "e.g., 10s = Every 10 seconds."
             },
             es: {
                 title: "Editor HyBroadcaster", subtitle: "Crea y previsualiza mensajes con colores para tu servidor.",
                 label_min: "Minuto", label_hour: "Hora", label_msg: "Contenido del Mensaje", label_title: "Título (Opcional)",
                 every: "¿Cada?", copy: "Copiar Objeto", copied: "¡COPIADO!", label_preview: "Vista Previa",
                 toast: "¿Mostrar como Emblema (Toast)?", toast_desc: "Notificación grande vs texto pequeño en chat.",
-                days: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"], msg_pre: "Se ejecutará "
+                days: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"], msg_pre: "Se ejecutará ",
+                simple_mode: "¿Modo Simple?", simple_desc: "Duraciones fáciles vs Cron avanzado.",
+                label_duration: "Duración", simple_hint: "ej. 10s = Cada 10 segundos."
             }
         };
 
@@ -261,7 +311,18 @@
             document.getElementById('txt-is-toast').innerText = t.toast;
             document.getElementById('txt-is-toast-desc').innerText = t.toast_desc;
             document.getElementById('copy-btn').innerText = t.copy;
+            document.getElementById('txt-simple-mode').innerText = t.simple_mode;
+            document.getElementById('txt-simple-desc').innerText = t.simple_desc;
+            document.getElementById('label-duration').innerText = t.label_duration;
+            document.getElementById('simple-hint').innerText = t.simple_hint;
             renderDays(); genCron();
+        }
+
+        function toggleMode() {
+            const isSimple = document.getElementById('simple-mode-check').checked;
+            document.getElementById('cron-editor').classList.toggle('hidden', isSimple);
+            document.getElementById('simple-editor').classList.toggle('hidden', !isSimple);
+            genCron();
         }
 
         function renderDays() {
@@ -292,33 +353,51 @@
         }
 
         function genCron() {
-            let m = document.getElementById('cron-m').value || '0';
-            let h = document.getElementById('cron-h').value || '*';
+            const isSimple = document.getElementById('simple-mode-check').checked;
             const title = document.getElementById('msg-title').value || "";
             const msg = document.getElementById('msg-text').value || "Welcome to our server!";
             const isToast = document.getElementById('is-toast-check').checked;
 
-            if (document.getElementById('check-m').checked && m !== '*' && !m.includes('/')) m = '*/' + m;
-            if (document.getElementById('check-h').checked && h !== '*' && !h.includes('/')) h = '*/' + h;
+            let scheduleVal = "";
 
-            const cron = `${m} ${h} * * ${selectedDays.sort().join(',')}`;
+            if (isSimple) {
+                const val = document.getElementById('simple-val').value;
+                const unit = document.getElementById('simple-unit').value;
+                scheduleVal = val + unit;
+            } else {
+                let m = document.getElementById('cron-m').value || '0';
+                let h = document.getElementById('cron-h').value || '*';
+                if (document.getElementById('check-m').checked && m !== '*' && !m.includes('/')) m = '*/' + m;
+                if (document.getElementById('check-h').checked && h !== '*' && !h.includes('/')) h = '*/' + h;
+                scheduleVal = `${m} ${h} * * ${selectedDays.sort().join(',')}`;
+            }
 
             // Actualizar Previsualización
             document.getElementById('preview-title').innerHTML = parseColors(title);
             document.getElementById('preview-text').innerHTML = parseColors(msg);
 
             const jsonObj = {
-                schedule: cron,
+                schedule: scheduleVal,
                 isToast: isToast,
                 title: title,
                 message: msg
             };
 
             document.getElementById('json-output').innerText = JSON.stringify(jsonObj, null, 4);
-            updateHumanReadable(m, h, selectedDays.join(','));
+
+            if (isSimple) {
+                document.getElementById('human-readable').innerText = currentLang === 'en' ?
+                    `"Will run every ${document.getElementById('simple-val').value} ${document.getElementById('simple-unit').options[document.getElementById('simple-unit').selectedIndex].text}."` :
+                    `"Se ejecutará cada ${document.getElementById('simple-val').value} ${document.getElementById('simple-unit').value === 's' ? 'segundos' : document.getElementById('simple-unit').value === 'm' ? 'minutos' : 'horas'}."`;
+            } else {
+                updateHumanReadable(scheduleVal);
+            }
         }
 
-        function updateHumanReadable(m, h, d) {
+        function updateHumanReadable(cron) {
+            const parts = cron.split(' ');
+            const m = parts[0], h = parts[1], d = parts[4];
+
             let res = "";
             const isMi = m.includes('*/'), isHi = h.includes('*/');
             const t = {

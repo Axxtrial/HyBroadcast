@@ -39,9 +39,14 @@ public class MessageScheduler {
         for (ScheduledMessage msg : messages) {
             try {
                 scheduleMessage(msg);
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().atWarning().log(
+                        "[ID: " + schedulerId + "] Skipped message: " + e.getMessage()
+                                + ". (Did you enable simpleMode but leave Cron expressions?)");
             } catch (Exception e) {
                 plugin.getLogger().atSevere().log(
-                        "[ID: " + schedulerId + "] Failed to schedule message with cron '" + msg.getSchedule() + "': "
+                        "[ID: " + schedulerId + "] Failed to schedule message with schedule '" + msg.getSchedule()
+                                + "': "
                                 + e.getMessage());
                 e.printStackTrace();
             }
@@ -49,14 +54,16 @@ public class MessageScheduler {
     }
 
     /**
-     * Schedules a single message based on its cron expression.
+     * Schedules a single message based on its configuration.
      */
     private void scheduleMessage(ScheduledMessage msg) {
-        CronScheduler cron = new CronScheduler(msg.getSchedule());
-
         // Capture the current executor instance to avoid rescheduling on a new one
         // after reload
         final ScheduledExecutorService currentExecutor = this.executor;
+
+        boolean simpleMode = plugin.getConfigManager().getConfig().isSimpleMode();
+        final CronScheduler cron = simpleMode ? null : new CronScheduler(msg.getSchedule());
+        final long simpleDuration = simpleMode ? parseDuration(msg.getSchedule()) : 0;
 
         // Schedule the recurring task
         Runnable task = new Runnable() {
@@ -70,8 +77,13 @@ public class MessageScheduler {
                     broadcastMessage(msg);
 
                     // Calculate next execution and reschedule
-                    boolean useUtc = plugin.getConfigManager().getConfig().isUseUtc();
-                    long delay = cron.getDelayUntilNext(useUtc);
+                    long delay;
+                    if (simpleMode) {
+                        delay = simpleDuration;
+                    } else {
+                        boolean useUtc = plugin.getConfigManager().getConfig().isUseUtc();
+                        delay = cron.getDelayUntilNext(useUtc);
+                    }
 
                     if (!active)
                         return; // double check before rescheduling
@@ -99,15 +111,20 @@ public class MessageScheduler {
         };
 
         // Schedule first execution
-        boolean useUtc = plugin.getConfigManager().getConfig().isUseUtc();
-        long initialDelay = cron.getDelayUntilNext(useUtc);
+        long initialDelay;
+        if (simpleMode) {
+            initialDelay = simpleDuration;
+        } else {
+            boolean useUtc = plugin.getConfigManager().getConfig().isUseUtc();
+            initialDelay = cron.getDelayUntilNext(useUtc);
+        }
         ScheduledFuture<?> future = currentExecutor.schedule(task, initialDelay, TimeUnit.MILLISECONDS);
         scheduledTasks.add(future);
 
         plugin.getLogger().atInfo().log(
                 "[ID: " + schedulerId + "] Scheduled message '"
                         + msg.getMessage().substring(0, Math.min(30, msg.getMessage().length())) +
-                        "...' with cron: " + msg.getSchedule() + " (next in " + (initialDelay / 1000) + "s)");
+                        "...' with schedule: " + msg.getSchedule() + " (next in " + (initialDelay / 1000) + "s)");
     }
 
     /**
@@ -157,6 +174,37 @@ public class MessageScheduler {
             plugin.getLogger().atInfo().log(
                     "[ID: " + schedulerId + "] Broadcasted scheduled message to " + playerCount + " player(s): "
                             + msg.getMessage());
+        }
+    }
+
+    /**
+     * Parses duration strings like "10s", "1m", "1h".
+     */
+    private long parseDuration(String durationStr) {
+        if (durationStr == null || durationStr.isEmpty()) {
+            throw new IllegalArgumentException("Duration cannot be empty");
+        }
+
+        durationStr = durationStr.toLowerCase().trim();
+        long multiplier = 1000;
+
+        if (durationStr.endsWith("s")) {
+            durationStr = durationStr.substring(0, durationStr.length() - 1);
+        } else if (durationStr.endsWith("m")) {
+            multiplier = 60 * 1000;
+            durationStr = durationStr.substring(0, durationStr.length() - 1);
+        } else if (durationStr.endsWith("h")) {
+            multiplier = 60 * 60 * 1000;
+            durationStr = durationStr.substring(0, durationStr.length() - 1);
+        } else if (durationStr.endsWith("d")) {
+            multiplier = 24 * 60 * 60 * 1000;
+            durationStr = durationStr.substring(0, durationStr.length() - 1);
+        }
+
+        try {
+            return Long.parseLong(durationStr) * multiplier;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid duration format: " + durationStr);
         }
     }
 

@@ -12,6 +12,7 @@ public class PluginConfig {
     private boolean debugMode;
     private boolean enableScheduledMessages;
     private boolean useUtc;
+    private boolean simpleMode;
     private String toastPrefix;
     private List<ScheduledMessage> scheduledMessages;
 
@@ -60,6 +61,14 @@ public class PluginConfig {
 
     public void setUseUtc(boolean useUtc) {
         this.useUtc = useUtc;
+    }
+
+    public boolean isSimpleMode() {
+        return simpleMode;
+    }
+
+    public void setSimpleMode(boolean simpleMode) {
+        this.simpleMode = simpleMode;
     }
 
     public String getToastPrefix() {
